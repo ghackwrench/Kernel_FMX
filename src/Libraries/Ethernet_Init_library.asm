@@ -1,8 +1,44 @@
 
 ; Simple Init For the ESID and EVID
+
+ip_info
+        .byte   192, 168, 1, 122
+        .byte   255,255,255,0
+        .byte   192,168,1,1
+
                 
 SIMPLE_INIT_ETHERNET_CTRL   .proc
+
+        php
+
+        sep     #$30
+        lda     GABE_MSTR_CTRL
+        ora     #GABE_CTRL_PWR_LED
+        sta     GABE_MSTR_CTRL
+        rep     #$30
+
+        phb
+        phk
+        plb
+        ldy     #<>ip_info
+        jsl     kernel.net.user.init
+        plb
+        bcs     _done
+
+        sep     #$30
+        lda     GABE_MSTR_CTRL
+        and     #~GABE_CTRL_PWR_LED
+        sta     GABE_MSTR_CTRL
+        rep     #$30
+        
+        jsl     kernel.net.user.udp_recv
+
+_done   plp
+        rtl
+        
                 .al
+
+
 WaitforittobeReady:
                 LDA @l ESID_ETHERNET_REG + $84
                 AND #$0001
