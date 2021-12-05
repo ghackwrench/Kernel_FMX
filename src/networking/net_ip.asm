@@ -45,8 +45,7 @@ ip_check:
         beq     ip_icmp
         
 _bad    jmp     pbuf_free_x
-_udp    ;jmp     ipv4.ip_udp
-        jmp     _bad
+_udp    jmp     ip_udp
 
 
 ip_icmp:

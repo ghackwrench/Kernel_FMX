@@ -20,6 +20,7 @@ remote_port .word   ?   ; remote port #, little endian
 buffer      .dword  ?   ; 24-bit address of your data
 buflen      .word   ?   ; length of the above buffer in bytes
 copied      .word   ?   ; number of bytes copied in/out of the above buffer
+size
             .ends
 
 nfunc       .macro  vector

@@ -15,9 +15,7 @@ net         .namespace
             .include    "packet.asm"
             .include    "arp.asm"
             .include    "net_ip.asm"
-            ;.include    "ip.asm"
-            ;.include    "eth.asm"
-
+            .include    "net_udp.asm"
 
 ip          .namespace
 udp_send    
@@ -53,12 +51,11 @@ init
 
             rts
 
-udp_recv
-            phk
-            plb
-            jmp     packet_recv
-
 rx_queue    .dstruct    lib.deque_t
+
+rx_enqueue
+        #lib.deque_enque rx_queue, x, kernel.net.pbuf.deque, @l
+        rts 
 
 packet_recv    
     ; Read and process packets from the lan until its queue is empty,
@@ -67,16 +64,16 @@ packet_recv
     ; Otherwise, the Z flag will be set.
 
 _loop   jsr     hardware.lan9221.eth_packet_recv
-        beq     _deque
         tax
-  jsr _toggle
+        beq     _deque
         lda     pbuf.eth.type,x
         xba
         cmp     #$0800
         beq     _ipv4
         cmp     #$0806
         beq     _arp
-        jmp     kernel.net.pbuf_free_x  ; We don't handle anything else.
+        jsr     kernel.net.pbuf_free_x  ; We don't handle anything else.
+        jmp     _loop
         
 _arp    jsr     arp.recv
         jmp     _loop
@@ -88,15 +85,81 @@ _deque
         #lib.deque_deque rx_queue, x, kernel.net.pbuf.deque, @l
         rts
 
-_toggle
-        sep     #$30
+toggle
+        sep     #$20
         lda     GABE_MSTR_CTRL
         eor     #GABE_CTRL_PWR_LED
         sta     GABE_MSTR_CTRL
-        rep     #$30
+        rep     #$20
         rts
 
 
+udp_recv
+    ; IN: X -> udp_info in bank 0
+    ; If a packet is available, Z is clear (bne)
+    ; If no packets were available, Z is set (beq)
+            phk
+            plb
+            jsr     packet_recv
+            beq     _out
+
+          ; Copy the data out of the packet
+            
+            lda     pbuf.ipv4.src+0,x
+            sta     user.udp_info.remote_ip,d
+            lda     pbuf.ipv4.src+2,x
+            sta     user.udp_info.remote_ip+2,d
+            
+            lda     pbuf.ipv4.udp.sport,x
+            xba
+            sta     user.udp_info.remote_port,d
+            
+            lda     pbuf.ipv4.udp.dport,x
+            xba
+            sta     user.udp_info.local_port,d
+            
+          ; Determine the copy size
+            lda     pbuf.ipv4.udp.length,x
+            xba
+            sec
+            sbc     #udp_t.size
+            cmp     user.udp_info.buflen,d
+            bcc     _length
+            beq     _length
+            lda     user.udp_info.buflen,d    ; Limit copy to buflen.
+_length     sta     user.udp_info.copied,d    ; copied = # of bytes to copy    
+
+            phx
+
+          ; Set Y->user buffer offset
+            ldy     #0
+    
+          ; Copy the data
+            lsr     a
+            bcc     _even
+    
+          ; Odd length, copy exactly one byte.
+_odd        sep     #$20
+            lda     pbuf.ipv4.udp.data,x
+            sta     [user.udp_info.buffer],y
+            inx
+            iny
+            rep     #$20
+            jmp     _next
+    
+_even       lda     pbuf.ipv4.udp.data,x
+            sta     [user.udp_info.buffer],y
+            inx
+            inx
+            iny
+            iny
+_next       cpy     user.udp_info.copied,d
+            bne     _even
+    
+            plx
+            jsr     kernel.net.pbuf_free_x
+    
+_out        rts
 
 .if false
 
@@ -112,67 +175,6 @@ udp_send
 _out        rts        
 
 
-udp_recv
-    ; IN: X -> udp_info in bank 0
-    ; If a packet is available, Z is clear (bne)
-    ; If no packets were available, Z is set (beq)
-
-            jsr     eth.eth_recv
-            jsr     packet.udp_pop
-            beq     _out
-    
-          ; Copy the data out of the packet
-            
-            lda     ip.src+0,x
-            sta     udp_info.remote_ip,d
-            lda     ip.src+2,x
-            sta     udp_info.remote_ip+2,d
-            
-            lda     ip.udp.sport,x
-            sta     udp_info.remote_port,d
-            
-            lda     ip.udp.dport,x
-            sta     udp_info.local_port,d
-            
-          ; Determine the copy size
-            lda     ip.udp.length,x
-            cmp     udp_info.length,d
-            bcc     _length
-            beq     _length
-            lda     udp_info.length,d    ; Limit copy to buflen.
-_length     sta     udp_info.copied,d    ; copied = # of bytes to copy    
-
-            phx
-
-          ; Set Y->user buffer offset
-            ldy     #0
-    
-          ; Copy the data
-            lsr     a
-            beq     _even
-    
-          ; Odd length, copy exactly one byte.
-_odd        sep     #$20
-            lda     ip.udp.data,x
-            sta     [udp_info.buffer],y
-            inx
-            iny
-            rep     #$20
-            jmp     _next
-    
-_even       lda     ip.udp.data,x
-            sta     [udp_info.buffer],y
-            inx
-            inx
-            iny
-            iny
-_next       cpy     udp_info.copied,d
-            bne     _even
-    
-            plx
-            jsr     packet.udp_free
-    
-_out        rts
 .endif
 
             .endn

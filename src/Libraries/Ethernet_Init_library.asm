@@ -30,14 +30,38 @@ SIMPLE_INIT_ETHERNET_CTRL   .proc
         and     #~GABE_CTRL_PWR_LED
         sta     GABE_MSTR_CTRL
         rep     #$30
+        .al
+        .xl
+
+      ; Allocate our DP interface buffer
+        tsc
+        sec
+        sbc     #kernel.net.user.udp_info.size
+        tcs
+        inc     a
+        tax
         
+      ; Use the display as our data buffer
+        lda     #$a100
+        sta     kernel.net.user.udp_info.buffer+0,d,x
+        lda     #$af
+        sta     kernel.net.user.udp_info.buffer+2,d,x
+        lda     #5
+        sta     kernel.net.user.udp_info.buflen,d,x
+
 _loop   jsl     kernel.net.user.udp_recv
+        beq     _loop
+        lda     kernel.net.user.udp_info.copied,d,x
+        and     #$ff
+        ora     #$2000
+        clc
+        adc     #'0'
+        sta     $afa090
         jmp     _loop
 
 _done   plp
         rtl
         
-                .al
 
 
 WaitforittobeReady:
