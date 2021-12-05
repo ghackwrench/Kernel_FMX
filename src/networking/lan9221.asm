@@ -95,10 +95,7 @@ _loop   lda     LAN + hardware.lan9221.RX_DATA_FIFO + 0
         rts
 
 send_buffer:
-    ; A->packet buffer
-    
-        phx
-        tax
+    ; X->packet buffer
 
         ; Send command "A"
 
@@ -135,9 +132,8 @@ _loop   lda     kernel.net.pbuf.eth,x
         inx
         dey
         bne     _loop
+        plx     ; Packet
 
-        pla     ; Packet
-        plx     ; Device
         rts
 
 .if false
@@ -248,9 +244,9 @@ _delay  nop
         jmp     _loop
 
 eth_packet_send
-    ; Packet base in A
+    ; Packet base in X
         jsr     send_buffer
-        jmp     kernel.net.pbuf_free
+        jmp     kernel.net.pbuf_free_x
 
 eth_packet_recv
     ; Packet base in A; zero if no packets can be read.

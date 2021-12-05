@@ -67,12 +67,17 @@ ipv4        .dstruct  ip_t
 pbuf_t  .struct
 stack
 deque   .dstruct lib.deque_t
-length  .word   ?        
-data
+length  .word   ?
+        .union
 eth     .dstruct eth_t
+        .struct
+        .fill       14      ; ethernet header
+ipv4    .dstruct    ip_t
+        .ends
+        .endu
         .ends
 
-        .virtual PACKETS
+        .virtual $3c0000 ;PACKETS
 pbuf    .dstruct    pbuf_t
         .endv
 

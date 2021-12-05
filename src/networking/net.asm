@@ -13,6 +13,8 @@ net         .namespace
 
             .include    "user.asm"
             .include    "packet.asm"
+            .include    "arp.asm"
+            .include    "net_ip.asm"
             ;.include    "ip.asm"
             ;.include    "eth.asm"
 
@@ -48,12 +50,13 @@ init
             plb
             jsr     pbuf_init
             jsr     hardware.lan9221.eth_open
-            ; Call the pbuf init
-            ; Call the card init
 
             rts
 
-udp_recv    rts
+udp_recv
+            phk
+            plb
+            jmp     packet_recv
 
 rx_queue    .dstruct    lib.deque_t
 
@@ -66,6 +69,7 @@ packet_recv
 _loop   jsr     hardware.lan9221.eth_packet_recv
         beq     _deque
         tax
+  jsr _toggle
         lda     pbuf.eth.type,x
         xba
         cmp     #$0800
@@ -74,12 +78,10 @@ _loop   jsr     hardware.lan9221.eth_packet_recv
         beq     _arp
         jmp     kernel.net.pbuf_free_x  ; We don't handle anything else.
         
-_arp    ; send to ARP handler
-        jsr     kernel.net.pbuf_free_x
+_arp    jsr     arp.recv
         jmp     _loop
 
-_ipv4   ; send to UDP handler
-        jsr     kernel.net.pbuf_free_x
+_ipv4   jsr     ip_check
         jmp     _loop
 
 _deque        

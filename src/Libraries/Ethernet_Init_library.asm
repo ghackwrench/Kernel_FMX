@@ -31,7 +31,8 @@ SIMPLE_INIT_ETHERNET_CTRL   .proc
         sta     GABE_MSTR_CTRL
         rep     #$30
         
-        jsl     kernel.net.user.udp_recv
+_loop   jsl     kernel.net.user.udp_recv
+        jmp     _loop
 
 _done   plp
         rtl
