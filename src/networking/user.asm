@@ -42,7 +42,7 @@ init
 ; On success, X->copied is set to the number of bytes sent.
 ; Carry set (bcs) on error (no route to host).
 udp_send    
-            #nfunc  net.ip.udp_send
+            #nfunc  net.udp_send
 
 ; Receive a UDP packet
 ; X points to a udp_info structure in bank0.

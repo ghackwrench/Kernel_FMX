@@ -9,6 +9,39 @@ lib         .namespace
             .include    "lan9221.asm"
 
 kernel      .namespace
+
+print_hex_word:
+            pha
+            xba
+            jsr     print_hex_byte
+            lda     1,s
+            jsr     print_hex_byte
+            pla
+            rts
+            
+print_hex_byte
+            pha
+            lsr     a
+            lsr     a
+            lsr     a
+            lsr     a
+            jsr     print_hex_nibble
+            pla
+            jmp     print_hex_nibble
+            
+print_hex_nibble
+            and     #$0f
+            phx
+            tax
+            lda     _tab,x
+            tyx
+            ora     #$2000
+            sta     $afa000,x
+            iny
+            plx
+            rts
+_tab        .null   "0123456789ABCDEF"            
+
 net         .namespace
 
             .include    "user.asm"
@@ -17,19 +50,15 @@ net         .namespace
             .include    "net_ip.asm"
             .include    "net_udp.asm"
 
-ip          .namespace
-udp_send    
-            clc
-            rts
-            .endn
-            
 
 conf        .namespace
 eth_mac     .byte   $c2 ; NIC's MAC prefix; the rest is the IP address.
             .byte   $56 ; c2:56: just happens to be a "local assignment" prefix :).
 ip_addr     .fill   4   ; Local IP address, MUST IMMEDIATELY FOLLOW THE MAC!
 ip_mask     .fill   4   ; Local netmask
+broadcast   .fill   4   ; Broadcast address
 default     .dword  0   ; Default route (0 = local only)
+ticks       .word   0   ; virtual timer
             .endn
         
 cp_ip       .macro  src, dest
@@ -43,6 +72,16 @@ init
             #cp_ip  user.ip_info.ip,        conf.ip_addr
             #cp_ip  user.ip_info.mask,      conf.ip_mask
             #cp_ip  user.ip_info.default,   conf.default
+
+          ; Compute the broadcast address
+            lda     conf.ip_mask+0
+            eor     #$ffff
+            ora     conf.ip_addr+0
+            sta     conf.broadcast+0
+            lda     conf.ip_mask+2
+            eor     #$ffff
+            ora     conf.ip_addr+2
+            sta     conf.broadcast+2
 
             phk
             plb
@@ -63,15 +102,25 @@ packet_recv
     ; If anything is available, it'll be in X (non-zero)
     ; Otherwise, the Z flag will be set.
 
-_loop   jsr     hardware.lan9221.eth_packet_recv
+_loop   jsr     hardware.lan9221.eth_tick   ; NZ if the 100ms timer has reset.
+        beq     _recv
+        lda     conf.ticks
+        inc     a
+        sta     conf.ticks
+
+_recv   jsr     hardware.lan9221.eth_packet_recv
         tax
-        beq     _deque
+        beq     _done
+
         lda     pbuf.eth.type,x
         xba
+
         cmp     #$0800
         beq     _ipv4
+
         cmp     #$0806
         beq     _arp
+
         jsr     kernel.net.pbuf_free_x  ; We don't handle anything else.
         jmp     _loop
         
@@ -81,9 +130,7 @@ _arp    jsr     arp.recv
 _ipv4   jsr     ip_check
         jmp     _loop
 
-_deque        
-        #lib.deque_deque rx_queue, x, kernel.net.pbuf.deque, @l
-        rts
+_done   rts
 
 toggle
         sep     #$20
@@ -93,15 +140,48 @@ toggle
         rep     #$20
         rts
 
+udp_send
+    ; IN: X -> udp_info in bank 0
+    ; On success: carry clear and all registers preserved
+    ; On failure: carry set, A=error, X and Y preserved
+
+        phk
+        plb
+
+        lda     #'M'
+        sta     $afa000+161
+
+            jsr     udp_make
+            bcs     _out
+        lda     #'B'
+        sta     $afa000+161
+            jsr     arp.bind
+            bcs     _out
+        lda     #'S'
+        sta     $afa000+161
+            jsr     hardware.lan9221.eth_packet_send
+            clc
+_out        rts        
 
 udp_recv
-    ; IN: X -> udp_info in bank 0
+    ; IN: D -> udp_info in bank 0
     ; If a packet is available, Z is clear (bne)
     ; If no packets were available, Z is set (beq)
+
             phk
             plb
+            
+          ; Drain the NIC's queue
             jsr     packet_recv
+
+            stz     user.udp_info.copied,d
+
+          ; See if any UDP packets are available
+            #lib.deque_deque rx_queue, x, kernel.net.pbuf.deque, @l
             beq     _out
+            
+          ; Update our ARP cache with the mac of the source
+            jsr     arp.cache_ip
 
           ; Copy the data out of the packet
             
@@ -159,23 +239,8 @@ _next       cpy     user.udp_info.copied,d
             plx
             jsr     kernel.net.pbuf_free_x
     
-_out        rts
-
-.if false
-
-
-udp_send
-    ; IN: X -> udp_info in bank 0
-    ; On success: carry clear and all registers preserved
-    ; On failure: carry set, A=error, X and Y preserved
-
-            jsr     ip.arp_resolve
-            bcs     _out
-            jmp     ip.udp_send
-_out        rts        
-
-
-.endif
+_out        lda     user.udp_info.copied,d
+            rts
 
             .endn
             .endn

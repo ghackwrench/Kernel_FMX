@@ -60,7 +60,6 @@ _request
         bne     _drop
 
         jsr     arp_reply
-        txa
         jmp     hardware.lan9221.eth_packet_send
         
 arp_insert:
@@ -124,6 +123,277 @@ swap_ip
         sta     pbuf.eth.arp.tpa+2,x
 
         ply
+        rts
+
+
+entry   .struct
+ip      .fill   4
+mac     .fill   6
+last    .word   ?
+size    .ends
+
+count   .word   0
+entries .fill   8*entry.size,0
+entries_end
+target  .fill   4
+
+cache_arp_reply
+    ; Create a dummy IP packet that looks like it came from
+    ; a machine with the given ARP stats, then call cache_ip.
+    
+      ; Copy the IP (into dummy packet x=0)
+        lda     kernel.net.pbuf.eth.arp.spa+0,x
+        sta     kernel.net.pbuf.ipv4.src+0
+        lda     kernel.net.pbuf.eth.arp.spa+2,x
+        sta     kernel.net.pbuf.ipv4.src+2
+
+      ; Copy the MAC (into dummy packet x=0)
+        lda     kernel.net.pbuf.eth.arp.sha+0,x
+        sta     kernel.net.pbuf.eth.s_mac+0
+        lda     kernel.net.pbuf.eth.arp.sha+2,x
+        sta     kernel.net.pbuf.eth.s_mac+2
+        lda     kernel.net.pbuf.eth.arp.sha+4,x
+        sta     kernel.net.pbuf.eth.s_mac+4
+
+        phx
+        ldx     #0
+        jsr     cache_ip
+        plx
+        rts
+
+cache_ip
+    ; Insert or update an arp entry for a
+    ; local sender of the IP packet in X.
+
+        lda     #'C'
+        sta     $afa000+81
+
+        lda     #'R'
+        sta     $afa000+82
+
+        jsr     local
+        bne     _out
+
+        lda     #'L'
+        sta     $afa000+82
+
+        lda     #'F'
+        sta     $afa000+83
+
+      ; Search for the src ip
+        lda     kernel.net.pbuf.ipv4.src+0,x
+        sta     target+0
+        lda     kernel.net.pbuf.ipv4.src+2,x
+        sta     target+2
+
+        jsr     find
+        bcc     _update         ; Found; update MAC.
+
+        lda     #'N'
+        sta     $afa000+83
+
+        jsr     find_oldest     ; Not found, make new entry.
+
+      ; Copy the sender's IP address
+        lda     kernel.net.pbuf.ipv4.src+0,x
+        sta     entry.ip+0,b,y
+        lda     kernel.net.pbuf.ipv4.src+2,x
+        sta     entry.ip+2,b,y
+
+_update
+      ; Copy the MAC
+        lda     kernel.net.pbuf.eth.s_mac+0,x
+        sta     entry.mac+0,b,y
+        lda     kernel.net.pbuf.eth.s_mac+2,x
+        sta     entry.mac+2,b,y
+        lda     kernel.net.pbuf.eth.s_mac+4,x
+        sta     entry.mac+4,b,y
+
+        jsr     touch
+_out    rts
+
+
+touch
+      ; Update stats.
+        lda     kernel.net.conf.ticks
+        sta     entry.last,b,y
+        rts
+
+local:
+    ; IN: X->packet
+    ; OUT: NZ if the dest ip is non-local
+    
+        lda     kernel.net.pbuf.ipv4.dest+2,x
+        eor     kernel.net.conf.ip_addr+2
+        and     kernel.net.conf.ip_mask+2
+        bne     _out
+        
+        lda     kernel.net.pbuf.ipv4.dest+0,x
+        eor     kernel.net.conf.ip_addr+0
+        and     kernel.net.conf.ip_mask+0
+
+_out    rts
+
+bind:
+    ; IN: X->packet to send
+
+        lda     #'B'
+        sta     $afa000+162
+
+      ; Check for broadcasts
+
+        lda     kernel.net.pbuf.ipv4.dest+2,x
+        eor     kernel.net.conf.broadcast+2
+        bne     _lookup
+        lda     kernel.net.pbuf.ipv4.dest+0,x
+        eor     kernel.net.conf.broadcast+0
+        bne     _lookup
+
+      ; Broadcast packets use the broadcast MAC
+        lda     #$ffff
+        sta     kernel.net.pbuf.eth.d_mac+0,x
+        sta     kernel.net.pbuf.eth.d_mac+2,x
+        sta     kernel.net.pbuf.eth.d_mac+4,x
+        jmp     _found
+
+_lookup
+
+        lda     #'R'
+        sta     $afa000+162
+
+      ; Send to router?
+        jsr     local
+        bne     _router
+
+        lda     #'L'
+        sta     $afa000+162
+
+      ; Local; search for the mac of the dest ip
+        lda     kernel.net.pbuf.ipv4.dest+0,x
+        sta     target+0
+        lda     kernel.net.pbuf.ipv4.dest+2,x
+        sta     target+2
+        jmp     _find
+        
+_router
+      ; Search for the mac of the router
+        lda     kernel.net.conf.default+2
+        cmp     #$0100
+        bcc     _fail   ; No default route
+        sta     target+2
+        lda     kernel.net.conf.default+0
+        sta     target+0
+
+_find   
+        lda     #'A'
+        sta     $afa000+163
+
+        jsr     find
+        bcs     _arp
+        
+        lda     #'F'
+        sta     $afa000+163
+
+        lda     entry.mac+0,b,y
+        sta     kernel.net.pbuf.eth.d_mac+0,x
+        lda     entry.mac+2,b,y
+        sta     kernel.net.pbuf.eth.d_mac+2,x
+        lda     entry.mac+4,b,y
+        sta     kernel.net.pbuf.eth.d_mac+4,x
+
+_found
+        jsr     touch   ; Keep this arp entry :).
+
+      ; Set the ethernet frame type to ipv4
+        lda     #$0800
+        xba
+        sta     kernel.net.pbuf.eth.type+0,x
+        
+      ; Set the packet's source MAC to our MAC.
+        lda     kernel.net.conf.eth_mac+0
+        sta     kernel.net.pbuf.eth.s_mac+0,x
+        lda     kernel.net.conf.eth_mac+2
+        sta     kernel.net.pbuf.eth.s_mac+2,x
+        lda     kernel.net.conf.eth_mac+4
+        sta     kernel.net.pbuf.eth.s_mac+4,x
+
+      ; Set the raw (ethernet) packet length
+        lda     pbuf.ipv4.len,x
+        xba
+        clc
+        adc     #eth_t.size
+        sta     pbuf.length,x
+
+      ; Return success
+        clc
+        rts
+
+_arp
+_fail   sec
+        rts
+
+find:
+    ; Searches the arp table for an entry matching the packet's dest ip.
+    ; IN: X->packet, OUT: Y->entry
+    ; Carry clear on success
+        ldy     #<>entries
+_loop   cpy     #<>entries_end
+        beq     _none
+        jsr     compare
+        beq     _done
+        tya
+        clc
+        adc     #entry.size
+        tay
+        jmp     _loop
+_none   sec
+        rts
+_done   lda     kernel.net.conf.ticks
+        sta     entry.last,b,y
+        clc
+        rts
+
+compare:
+    ; Compares the packet's dest ip to the arp entry's ip
+    ; X -> packet, Y -> arp entry
+    ; Z set if the entries match.
+        lda     target+0
+        eor     entry.ip+0,b,y
+        bne     _done
+        lda     target+2
+        eor     entry.ip+2,b,y
+_done   rts
+
+
+
+find_oldest:
+    ; Finds the next "free" arp entry, where free means
+    ; either "unused" or "oldest".
+    ; OUT: y->entry
+        phx
+        pea     #0              ; Max age
+        ldy     #<>entries
+        tyx
+_loop   lda     entry.ip+0,b,y  ; Empty is free.
+        beq     _done
+
+        lda     kernel.net.conf.ticks
+        sec
+        sbc     entry.last,b,y  ; Age of this entry in A. 
+        cmp     1,s
+        bcc     _next
+        tyx                     ; X = new oldest
+        
+_next   tya
+        clc
+        adc     #entry.size
+        tay
+        cpy     #<>entries_end
+        bne     _loop
+        txy                     ; Y = X = oldest
+
+_done   pla                     ; Max age
+        plx                     ; Original
         rts
 
         .endn

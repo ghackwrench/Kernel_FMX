@@ -71,6 +71,9 @@ copy_buffer
         jsr     rx_status   ; Already local
         and     #$3fff
         sta @l  kernel.net.pbuf.length,x
+        
+        ldy     #322
+        jsr     kernel.print_hex_word
 
         ; Round up to total # of 32bit words for reading from the buffer.
         clc
@@ -136,34 +139,6 @@ _loop   lda     kernel.net.pbuf.eth,x
 
         rts
 
-.if false
-sendq   .dstruct    lib.deque_t
-
-tx_push 
-    ; IN:   A->packet, X->driver, Y->route
-    
-        jsr     kernel.net.ethernet.address ; X -> packet to send
-        bcs     _done
-
-        php
-        sei
-        #lib.deque_enque sendq, x, kernel.net.pbuf.deque, @l
-        plp
-
-_done   rts
-
-
-tx_pop  
-    ; OUT: A->packet (zero if queue is empty); ZF set accordingly.
-        phx
-        sei
-        #lib.deque_deque sendq, x, kernel.net.pbuf.deque, @l
-        cli
-        txa
-_done   plx
-        ora     #0
-        rts
-.endif
 
 eth_open:
     ; should prolly wake by initializing the byte order
@@ -202,6 +177,19 @@ eth_open:
         pea     #1  ; MAC CONTROL REGISTER
         jsr     mac_write
 
+    ; Enable interrupts: GP Timer.
+    ; Does NOT configure the hardware signal.
+    ; We will poll the interrupt register.
+        ldy     #$0008
+        lda     #$0000
+        pea     #ETH_INT_EN
+        jsr     eth_write
+
+    ; Enable and reset the general purpose timer
+    ; This gives us a crude pollable timer which
+    ; won't be used by any other code on the system.
+        jsr     eth_timer_reset
+
     ; Enable the transmitter
         ldy     #0
         lda     #6  ; tx enabled, allow status overrun.
@@ -212,6 +200,33 @@ eth_open:
 _out    rts
 _err    sec
         jmp     _out
+
+eth_tick:
+
+      ; See if the GP timer has expired
+        ldy     #ETH_INT_STS
+        jsr     eth_read
+        tya
+        and     #$0008
+        beq     _out
+
+      ; clear the associated interrupt flag
+        tay
+        lda     #0
+        pea     #ETH_INT_STS
+        jsr     eth_write
+
+      ; Reset the timer
+        jsr     eth_timer_reset
+
+_out    rts        
+
+eth_timer_reset
+        ldy     #$2000
+        lda     #1000   ; 100ms
+        pea     #ETH_GPT_CFG
+        jsr     eth_write
+        rts
 
 eth_reset:
         ldy     #$0000
@@ -245,6 +260,11 @@ _delay  nop
 
 eth_packet_send
     ; Packet base in X
+    
+        ldy     #242
+        lda     kernel.net.pbuf.length,x
+        jsr     kernel.print_hex_word
+        
         jsr     send_buffer
         jmp     kernel.net.pbuf_free_x
 

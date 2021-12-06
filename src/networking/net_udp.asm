@@ -85,23 +85,15 @@ _sum    xba
         sta     3,s
         rts
 
-.if false
-udp_send:
-    ; Y -> send_msg
+udp_make:
+    ; D->kernel.net.user.udp_info
 
         jsr     pbuf_alloc_x
         bne     _fill
+        sec
         rts
     
 _fill
-
-    ; do this in the router...
-        lda     #0
-        sta     kernel.net.pbuf.eth.d_mac+0,x
-        lda     #$0800
-        xba
-        sta     kernel.net.pbuf.eth.type+0,x
-
         lda     #$45                ; Version=4, IHL=5, TOS=0
         sta     pbuf.ipv4.ihl,x 
         ; Total length TBD
@@ -113,106 +105,60 @@ _fill
         sta     pbuf.ipv4.ttl,x
 
         ; Copy source address
-        lda     udp_msg.src_ip+0,b,y
+        lda     conf.ip_addr+0
         sta     pbuf.ipv4.src+0,x
-        lda     udp_msg.src_ip+2,b,y
+        lda     conf.ip_addr+2
         sta     pbuf.ipv4.src+2,x
 
         ; Copy dest address
-        lda     udp_msg.dest_ip+0,b,y
+        lda     user.udp_info.remote_ip+0,d
         sta     pbuf.ipv4.dest+0,x
-        lda     udp_msg.dest_ip+2,b,y
+        lda     user.udp_info.remote_ip+2,d
         sta     pbuf.ipv4.dest+2,x
 
       ; Copy the source and dest ports
-        lda     udp_msg.src_port,b,y
+        lda     user.udp_info.local_port,d
         xba
-        sta     pbuf.ipv4+udp.sport,x
-        lda     udp_msg.dest_port,b,y
+        sta     pbuf.ipv4.udp.sport,x
+        lda     user.udp_info.remote_port,d
         xba
-        sta     pbuf.ipv4+udp.dport,x
+        sta     pbuf.ipv4.udp.dport,x
         
       ; Copy the data
         jsr     copy_msg_data
         
       ; Set the UDP length
-        lda     udp_msg.length,b,y
+        lda     user.udp_info.buflen,d  ; TODO: copied!
         clc
-        adc     #udp.size - ip.size
+        adc     #udp_t.size
         xba
-        sta     pbuf.ipv4+udp.length,x
+        sta     pbuf.ipv4.udp.length,x
         xba
         
       ; Set the IP length
         clc
-        adc     #ip.size
+        adc     #ip_t.size
         xba
         sta     pbuf.ipv4.len,x
 
       ; Update the checksums
-        phx
-        txa
-        clc
-        adc     #<>kernel.net.pbuf.eth.data
-        tax
-      plx
         jsr     update_udp_checksum
         jsr     update_ip_checksum
-      ;plx
 
-    ; Proof of concept; prolly best done at the router.
-
-      ; Set the raw (ethernet) packet length
-        lda     pbuf.ipv4.len,x
-        xba
-        clc
-        adc     #ethernet.packet_t.data
-        sta     pbuf.length,x
-
-      ; Set the ethernet frame type to IPv4
-        lda     #$0800
-        xba
-        sta     pbuf.eth.type,x
-
-      ; Clear the dest MAC address
-        lda     #0
-        sta     pbuf.eth.d_mac+0,x
-        sta     pbuf.eth.d_mac+2,x
-        sta     pbuf.eth.d_mac+4,x
-
-      ; Send the packet
-        jmp     route.dispatch
+        rts
 
 copy_msg_data
-
-        lda     udp_msg.length,b,y
-        beq     _done
-
+        ldy     #0
         phx
-        phy
-
-        clc
-        adc     udp_msg.data,b,y
-        pha
-
-      ; Buffer start in Y
-        lda     udp_msg.data,b,y
-        tay
-        
-_loop   lda     0,b,y
-        sta     kernel.net.pbuf.eth.data+udp.data,x
+_loop   cpy     user.udp_info.buflen,d
+        bcs     _done
+        lda     [user.udp_info.buffer],y
+        sta     kernel.net.pbuf.ipv4.udp.data,x
         inx
         inx
         iny
         iny
-        tya
-        cmp     1,s
-        bcc     _loop
-        
-        pla     ; count
-        ply     ; original
-        plx     ; original
-        
-_done   rts
+        jmp     _loop
+_done   plx
+        rts
 
-.endif

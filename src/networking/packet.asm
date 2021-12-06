@@ -58,6 +58,7 @@ eth_t   .struct
 d_mac   .fill   6
 s_mac   .fill   6
 type    .word   ?
+size
         .union
 arp         .dstruct  arp_t
 ipv4        .dstruct  ip_t
@@ -77,7 +78,7 @@ ipv4    .dstruct    ip_t
         .endu
         .ends
 
-        .virtual $3c0000 ;PACKETS
+        .virtual    PACKETS
 pbuf    .dstruct    pbuf_t
         .endv
 
@@ -128,9 +129,3 @@ pbuf_free_x:
         plp
         rts
       
-pbuf_free:
-        phx
-        tax
-        jsr     pbuf_free_x
-        plx 
-        rts
