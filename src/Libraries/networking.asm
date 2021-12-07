@@ -21,7 +21,7 @@
 ;           awaiting an ARP response from the target or the router;
 ;           callers are expected to retry the send.  The stack rate-
 ;           limits ARP requests to approximately 2/s per address.
-;           Sends to your IPv4 broadcast address will be sent with the
+;           Sends to your IPv4 broadcast address will be sent to the
 ;           broadcast MAC (ff:ff:ff:ff:ff:ff).  An EOM should only occur 
 ;           if you aren't calling UDP_RECV often enough to drain the 
 ;           incoming UDP packet queue.  
