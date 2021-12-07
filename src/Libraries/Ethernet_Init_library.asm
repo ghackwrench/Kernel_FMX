@@ -15,6 +15,7 @@ SIMPLE_INIT_ETHERNET_CTRL   .proc
         sta     HAS_ETHERNET
         rtl
 
+; Test code for the IP stack
         php
 
         sep     #$30
@@ -66,10 +67,7 @@ SIMPLE_INIT_ETHERNET_CTRL   .proc
         lda     #6
         sta     kernel.net.user.udp_info.buflen,d,x
 
-_retry  lda     $afa000+322
-        inc     a
-        sta     $afa000+322
-        jsl     kernel.net.user.udp_send
+_retry  jsl     kernel.net.user.udp_send
         bcs     _retry        
 
 _loop
@@ -88,10 +86,13 @@ _loop
 _done   plp
         rtl
 
-_ip     .byte   192, 168, 1, 5
+_ip     ;.byte   204, 87, 225, 246
+        .byte   192, 168, 1, 5
 _port   .word   12345
 
 
+; Original code for hisorical reference
+                .al
 WaitforittobeReady:
                 LDA @l ESID_ETHERNET_REG + $84
                 AND #$0001

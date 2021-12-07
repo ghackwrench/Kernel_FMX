@@ -72,9 +72,6 @@ copy_buffer
         and     #$3fff
         sta @l  kernel.net.pbuf.length,x
         
-        ldy     #322
-        jsr     kernel.print_hex_word
-
         ; Round up to total # of 32bit words for reading from the buffer.
         clc
         adc     #3
@@ -261,10 +258,6 @@ _delay  nop
 eth_packet_send
     ; Packet base in X
     
-        ldy     #242
-        lda     kernel.net.pbuf.length,x
-        jsr     kernel.print_hex_word
-        
         jsr     send_buffer
         jmp     kernel.net.pbuf_free_x
 

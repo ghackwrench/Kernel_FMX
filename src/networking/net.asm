@@ -52,6 +52,7 @@ net         .namespace
 
 
 conf        .namespace
+init        .word   0   ; NZ if init has succeeded
 eth_mac     .byte   $c2 ; NIC's MAC prefix; the rest is the IP address.
             .byte   $56 ; c2:56: just happens to be a "local assignment" prefix :).
 ip_addr     .fill   4   ; Local IP address, MUST IMMEDIATELY FOLLOW THE MAC!
@@ -69,6 +70,11 @@ cp_ip       .macro  src, dest
             .endm
 
 init
+            lda     HAS_ETHERNET
+            bne     _init
+            sec
+            rts
+_init            
             #cp_ip  user.ip_info.ip,        conf.ip_addr
             #cp_ip  user.ip_info.mask,      conf.ip_mask
             #cp_ip  user.ip_info.default,   conf.default
@@ -88,6 +94,9 @@ init
             jsr     pbuf_init
             jsr     hardware.lan9221.eth_open
 
+            lda     #1
+            sta     conf.init
+            clc
             rts
 
 rx_queue    .dstruct    lib.deque_t
@@ -97,10 +106,7 @@ rx_enqueue
         rts 
 
 packet_recv    
-    ; Read and process packets from the lan until its queue is empty,
-    ; then return whatever might be at the head of the received UDP queue.
-    ; If anything is available, it'll be in X (non-zero)
-    ; Otherwise, the Z flag will be set.
+    ; Read and process packets from the lan until its queue is empty.
 
 _loop   jsr     hardware.lan9221.eth_tick   ; NZ if the 100ms timer has reset.
         beq     _recv
@@ -132,42 +138,52 @@ _ipv4   jsr     ip_check
 
 _done   rts
 
-toggle
-        sep     #$20
-        lda     GABE_MSTR_CTRL
-        eor     #GABE_CTRL_PWR_LED
-        sta     GABE_MSTR_CTRL
-        rep     #$20
-        rts
 
 udp_send
     ; IN: X -> udp_info in bank 0
     ; On success: carry clear and all registers preserved
     ; On failure: carry set, A=error, X and Y preserved
 
-        phk
-        plb
+            lda     conf.init
+            beq     _error
 
-        lda     #'M'
-        sta     $afa000+161
+            phk
+            plb
 
+          ; Drain the NIC's queue
+            jsr     packet_recv
+            
+          ; Construct the packet
+          ; Could check for valid routing /first/, but meh.
             jsr     udp_make
             bcs     _out
-        lda     #'B'
-        sta     $afa000+161
+
+          ; Bind the ethernet 
             jsr     arp.bind
-            bcs     _out
-        lda     #'S'
-        sta     $afa000+161
+            bcs     _fail
+
             jsr     hardware.lan9221.eth_packet_send
             clc
 _out        rts        
+
+_fail       jsr     kernel.net.pbuf_free_x
+_error      sec
+            rts
+
 
 udp_recv
     ; IN: D -> udp_info in bank 0
     ; If a packet is available, Z is clear (bne)
     ; If no packets were available, Z is set (beq)
+    ; Carry set on error (uninitialized); clear otherwise.
 
+            lda     conf.init
+            bne     _recv
+            lda     #0
+            sec
+            rts
+
+_recv
             phk
             plb
             
@@ -240,6 +256,7 @@ _next       cpy     user.udp_info.copied,d
             jsr     kernel.net.pbuf_free_x
     
 _out        lda     user.udp_info.copied,d
+            clc
             rts
 
             .endn

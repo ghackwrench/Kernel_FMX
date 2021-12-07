@@ -203,9 +203,6 @@ cache_arp_reply
     ; Create a dummy IP packet that looks like it came from
     ; a machine with the given ARP stats, then call cache_ip.
     
-        lda     #'C'
-        sta     $afa000+83
-
       ; Copy the IP (into dummy packet x=0)
         lda     kernel.net.pbuf.eth.arp.spa+0,x
         sta     kernel.net.pbuf.ipv4.src+0
