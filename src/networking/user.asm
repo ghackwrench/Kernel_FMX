@@ -3,9 +3,6 @@
             .autsiz
 
 user        .namespace
-            .endn
-            
-            .namespace  user
 
 ip_info     .struct
 ip          .fill   4   ; Local ipv4 address in network order

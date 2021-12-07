@@ -6,8 +6,14 @@ ip_info
         .byte   255,255,255,0
         .byte   192,168,1,1
 
+HAS_ETHERNET    .word   0
                 
 SIMPLE_INIT_ETHERNET_CTRL   .proc
+
+        lda     HAS_ETHERNET
+        inc     a
+        sta     HAS_ETHERNET
+        rtl
 
         php
 
@@ -49,19 +55,41 @@ SIMPLE_INIT_ETHERNET_CTRL   .proc
         lda     #5
         sta     kernel.net.user.udp_info.buflen,d,x
 
-_loop   jsl     kernel.net.user.udp_recv
-        beq     _loop
+      ; Do an initial send
+        lda     _ip+0
+        sta     kernel.net.user.udp_info.remote_ip+0,d,x
+        lda     _ip+2
+        sta     kernel.net.user.udp_info.remote_ip+2,d,x
+        lda     _port
+        sta     kernel.net.user.udp_info.local_port,d,x
+        sta     kernel.net.user.udp_info.remote_port,d,x
+        lda     #6
+        sta     kernel.net.user.udp_info.buflen,d,x
+
+_retry  lda     $afa000+322
+        inc     a
+        sta     $afa000+322
+        jsl     kernel.net.user.udp_send
+        bcs     _retry        
+
+_loop
+        lda     #20
+        sta     kernel.net.user.udp_info.buflen,d,x
+        jsl     kernel.net.user.udp_recv
         lda     kernel.net.user.udp_info.copied,d,x
-        and     #$ff
-        ora     #$2000
-        clc
-        adc     #'0'
-        sta     $afa090
+        beq     _loop
+
+        lda     kernel.net.user.udp_info.copied,d,x
+        sta     kernel.net.user.udp_info.buflen,d,x
+        jsl     kernel.net.user.udp_send
+
         jmp     _loop
 
 _done   plp
         rtl
-        
+
+_ip     .byte   192, 168, 1, 5
+_port   .word   12345
 
 
 WaitforittobeReady:

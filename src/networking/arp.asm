@@ -46,7 +46,7 @@ recv
         ; Broadcast; fall-through to record.
 
 _record 
-        jsr     arp_insert
+        jsr     cache_arp_reply
 _drop   jmp     kernel.net.pbuf_free_x
 
 _request
@@ -62,8 +62,69 @@ _request
         jsr     arp_reply
         jmp     hardware.lan9221.eth_packet_send
         
-arp_insert:
+
+arp_request
+    ; Y->route entry
+
+        jsr     kernel.net.pbuf_alloc_x
+        bne     _good
         rts
+
+_good   lda     #$ffff
+        sta     kernel.net.pbuf.eth.d_mac+0,x
+        sta     kernel.net.pbuf.eth.d_mac+2,x
+        sta     kernel.net.pbuf.eth.d_mac+4,x
+
+        lda     #$0806  ; ARP packet
+        xba
+        sta     kernel.net.pbuf.eth.type,x
+
+        lda     #1      ; ethernet request
+        xba
+        sta     kernel.net.pbuf.eth.arp.htype,x
+
+        lda     #$0800  ; ethernet IPv4 type
+        xba
+        sta     kernel.net.pbuf.eth.arp.ptype,x
+
+        lda     #$0604      ; 6-byte hardware address (MAC)
+        xba                 ; 4-byte protocol address (IPv4)
+        sta     kernel.net.pbuf.eth.arp.hlen,x
+        
+        lda     #1      ; ARP request
+        xba
+        sta     kernel.net.pbuf.eth.arp.oper,x
+
+      ; Broadcast the ARP request
+        lda     #$ffff
+        sta     kernel.net.pbuf.eth.d_mac+0,x
+        sta     kernel.net.pbuf.eth.d_mac+2,x
+        sta     kernel.net.pbuf.eth.d_mac+4,x
+
+        lda     kernel.net.conf.eth_mac+0
+        sta     kernel.net.pbuf.eth.arp.sha+0,x
+        sta     kernel.net.pbuf.eth.s_mac+0,x
+        lda     kernel.net.conf.eth_mac+2
+        sta     kernel.net.pbuf.eth.arp.sha+2,x
+        sta     kernel.net.pbuf.eth.s_mac+2,x
+        lda     kernel.net.conf.eth_mac+4
+        sta     kernel.net.pbuf.eth.arp.sha+4,x
+        sta     kernel.net.pbuf.eth.s_mac+4,x
+
+        lda     kernel.net.conf.ip_addr+0
+        sta     kernel.net.pbuf.eth.arp.spa+0,x
+        lda     kernel.net.conf.ip_addr+2
+        sta     kernel.net.pbuf.eth.arp.spa+2,x
+
+        lda     entry.ip+0,b,y
+        sta     kernel.net.pbuf.eth.arp.tpa+0,x
+        lda     entry.ip+2,b,y
+        sta     kernel.net.pbuf.eth.arp.tpa+2,x
+
+        lda     #eth_t.arp.size
+        sta     kernel.net.pbuf.length,x
+
+        jmp     hardware.lan9221.eth_packet_send
 
 arp_reply
     ; Converts an ARP request to an ARP response.
@@ -129,6 +190,7 @@ swap_ip
 entry   .struct
 ip      .fill   4
 mac     .fill   6
+pending .word   ?
 last    .word   ?
 size    .ends
 
@@ -141,6 +203,9 @@ cache_arp_reply
     ; Create a dummy IP packet that looks like it came from
     ; a machine with the given ARP stats, then call cache_ip.
     
+        lda     #'C'
+        sta     $afa000+83
+
       ; Copy the IP (into dummy packet x=0)
         lda     kernel.net.pbuf.eth.arp.spa+0,x
         sta     kernel.net.pbuf.ipv4.src+0
@@ -165,21 +230,6 @@ cache_ip
     ; Insert or update an arp entry for a
     ; local sender of the IP packet in X.
 
-        lda     #'C'
-        sta     $afa000+81
-
-        lda     #'R'
-        sta     $afa000+82
-
-        jsr     local
-        bne     _out
-
-        lda     #'L'
-        sta     $afa000+82
-
-        lda     #'F'
-        sta     $afa000+83
-
       ; Search for the src ip
         lda     kernel.net.pbuf.ipv4.src+0,x
         sta     target+0
@@ -188,9 +238,6 @@ cache_ip
 
         jsr     find
         bcc     _update         ; Found; update MAC.
-
-        lda     #'N'
-        sta     $afa000+83
 
         jsr     find_oldest     ; Not found, make new entry.
 
@@ -208,6 +255,9 @@ _update
         sta     entry.mac+2,b,y
         lda     kernel.net.pbuf.eth.s_mac+4,x
         sta     entry.mac+4,b,y
+        
+        lda     #0
+        sta     entry.pending,b,y
 
         jsr     touch
 _out    rts
@@ -237,11 +287,7 @@ _out    rts
 bind:
     ; IN: X->packet to send
 
-        lda     #'B'
-        sta     $afa000+162
-
       ; Check for broadcasts
-
         lda     kernel.net.pbuf.ipv4.dest+2,x
         eor     kernel.net.conf.broadcast+2
         bne     _lookup
@@ -254,19 +300,13 @@ bind:
         sta     kernel.net.pbuf.eth.d_mac+0,x
         sta     kernel.net.pbuf.eth.d_mac+2,x
         sta     kernel.net.pbuf.eth.d_mac+4,x
-        jmp     _found
+        jmp     _finish
 
 _lookup
-
-        lda     #'R'
-        sta     $afa000+162
 
       ; Send to router?
         jsr     local
         bne     _router
-
-        lda     #'L'
-        sta     $afa000+162
 
       ; Local; search for the mac of the dest ip
         lda     kernel.net.pbuf.ipv4.dest+0,x
@@ -285,15 +325,14 @@ _router
         sta     target+0
 
 _find   
-        lda     #'A'
-        sta     $afa000+163
-
         jsr     find
         bcs     _arp
         
-        lda     #'F'
-        sta     $afa000+163
+        lda     entry.pending,b,y
+        beq     _found
+        jmp     _retry
 
+_found
         lda     entry.mac+0,b,y
         sta     kernel.net.pbuf.eth.d_mac+0,x
         lda     entry.mac+2,b,y
@@ -301,8 +340,9 @@ _find
         lda     entry.mac+4,b,y
         sta     kernel.net.pbuf.eth.d_mac+4,x
 
-_found
         jsr     touch   ; Keep this arp entry :).
+
+_finish
 
       ; Set the ethernet frame type to ipv4
         lda     #$0800
@@ -328,9 +368,31 @@ _found
         clc
         rts
 
-_arp
 _fail   sec
         rts
+
+_retry  lda     kernel.net.conf.ticks
+        sec
+        sbc     entry.last,b,y
+        cmp     #5
+        bcc     _fail    ; Too soon.
+        jmp     _request
+
+_arp
+        jsr     find_oldest
+        lda     target+0
+        sta     entry.ip+0,b,y
+        lda     target+2
+        sta     entry.ip+2,b,y
+        lda     #1
+        sta     entry.pending,b,y
+        lda     kernel.net.conf.ticks
+        sta     entry.last,b,y
+
+_request
+        jsr     arp_request
+        jsr     touch
+        jmp     _fail
 
 find:
     ; Searches the arp table for an entry matching the packet's dest ip.

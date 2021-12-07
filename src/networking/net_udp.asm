@@ -128,7 +128,12 @@ _fill
         jsr     copy_msg_data
         
       ; Set the UDP length
-        lda     user.udp_info.buflen,d  ; TODO: copied!
+        lda     user.udp_info.buflen,d
+        cmp     #1500 - eth_t.ipv4.udp.size ; Max data size
+        bcc     _size
+        lda     #1500 - eth_t.ipv4.udp.size ; limit to max data size
+_size   sta     user.udp_info.copied,d        
+
         clc
         adc     #udp_t.size
         xba
@@ -150,7 +155,7 @@ _fill
 copy_msg_data
         ldy     #0
         phx
-_loop   cpy     user.udp_info.buflen,d
+_loop   cpy     user.udp_info.copied,d
         bcs     _done
         lda     [user.udp_info.buffer],y
         sta     kernel.net.pbuf.ipv4.udp.data,x
