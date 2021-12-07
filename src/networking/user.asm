@@ -4,21 +4,8 @@
 
 user        .namespace
 
-ip_info     .struct
-ip          .fill   4   ; Local ipv4 address in network order
-mask        .fill   4   ; Local ipv4 netmask in network order
-default     .fill   4   ; Default ipv4 route in network order
-            .ends
-
-udp_info    .struct
-local_port  .word   ?   ; local port #, little-endian
-remote_ip   .fill   4   ; ipv4 address of remote machine, network order
-remote_port .word   ?   ; remote port #, little endian
-buffer      .dword  ?   ; 24-bit address of your data
-buflen      .word   ?   ; length of the above buffer in bytes
-copied      .word   ?   ; number of bytes copied in/out of the above buffer
-size
-            .ends
+            ; See this file for structs and docs.
+            .include    "../Libraries/networking.asm"
 
 nfunc       .macro  vector
             jsr     call

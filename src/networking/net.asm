@@ -254,9 +254,9 @@ _next       cpy     user.udp_info.copied,d
     
             plx
             jsr     kernel.net.pbuf_free_x
+            txa     ; Set the NZ condition code.
     
-_out        lda     user.udp_info.copied,d
-            clc
+_out        clc
             rts
 
             .endn
