@@ -158,12 +158,22 @@ udp_send
             jsr     udp_make
             bcs     _out
 
+          ; Forward self-addressed packets directly to ip_check.
+            lda     pbuf.ipv4.dest+0,x
+            cmp     conf.ip_addr+0
+            bne     _extern
+            lda     pbuf.ipv4.dest+2,x
+            cmp     conf.ip_addr+2
+            bne     _extern
+            jsr     ip_check
+            bra     _done
+
           ; Bind the ethernet 
-            jsr     arp.bind
+_extern     jsr     arp.bind
             bcs     _fail
 
             jsr     hardware.lan9221.eth_packet_send
-            clc
+_done       clc
 _out        rts        
 
 _fail       jsr     kernel.net.pbuf_free_x
