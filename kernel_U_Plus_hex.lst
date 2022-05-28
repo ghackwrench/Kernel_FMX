@@ -1,7 +1,7 @@
 
 ; 64tass Turbo Assembler Macro V1.54.1900 listing file
 ; 64tass.exe --m65816 -D TARGET=2 -D TARGET_SYS=3 --long-address --flat --intel-hex -o kernel_U_Plus.hex --list kernel_U_Plus_hex.lst --labels=kernel_U_Plus_hex.lbl src/kernel.asm
-; Tue Jan 25 22:21:51 2022
+; Sat May 28 08:49:25 2022
 
 ;Offset	;PC	;Hex		;Monitor	;Source
 
@@ -2590,7 +2590,7 @@
 .390544		ab		plb		                PLB
 .390545		28		plp		                PLP
 .390546		68		pla		                PLA             ; end setdbr macro
-.390547		a2 46 8c	ldx #$8c46	                LDX #<>greet_msg
+.390547		a2 4d 8c	ldx #$8c4d	                LDX #<>greet_msg
 .39054a		22 01 07 39	jsl $390701	                JSL IPRINT              ; print the first line
 .39054e		22 10 09 39	jsl $390910	                JSL ICOLORFLAG          ; This is to set the color memory for the text logo
 .390552		22 03 6b 39	jsl $396b03	                JSL EVID_GREET          ; Print the EVID greeting, if the EVID card is installed
@@ -2622,7 +2622,7 @@
 .39058a		5c 00 00 3a	jmp $3a0000	BOOTBASIC       JML BASIC             ; Cold start of the BASIC interpreter (or its replacement)
 .39058e		ea		nop		CREDIT_LOCK     NOP
 .39058f		80 fd		bra $39058e	                BRA CREDIT_LOCK
-.390591		a2 8c 90	ldx #$908c	BOOTSDC         LDX #<>sdc_boot
+.390591		a2 93 90	ldx #$9093	BOOTSDC         LDX #<>sdc_boot
 .390594		22 01 07 39	jsl $390701	                JSL IPRINT
 .390598		e2 20		sep #$20	                SEP #$20        ; set A short
 .39059a		a9 02		lda #$02	                LDA #BIOS_DEV_SD
@@ -2631,9 +2631,9 @@
 .3905a4		90 06		bcc $3905ac	                BCC sdc_error         ; Print an error message if couldn't get anything
 .3905a6		22 d0 40 39	jsl $3940d0	                JSL DOS_TESTBOOT      ; Try to boot from the SDC's MBR
 .3905aa		80 de		bra $39058a	                BRA BOOTBASIC         ; If we couldn't fall, into BASIC
-.3905ac		a2 10 90	ldx #$9010	sdc_error       LDX #<>sdc_err_boot   ; Print a message saying SD card booting is not implemented
+.3905ac		a2 17 90	ldx #$9017	sdc_error       LDX #<>sdc_err_boot   ; Print a message saying SD card booting is not implemented
 .3905af		80 40		bra $3905f1	                BRA PR_BOOT_ERROR
-.3905b1		a2 a3 90	ldx #$90a3	BOOTIDE         LDX #<>ide_boot
+.3905b1		a2 aa 90	ldx #$90aa	BOOTIDE         LDX #<>ide_boot
 .3905b4		22 01 07 39	jsl $390701	                JSL IPRINT
 .3905b8		e2 20		sep #$20	                SEP #$20        ; set A short
 .3905ba		a9 06		lda #$06	                LDA #BIOS_DEV_HD0
@@ -2642,9 +2642,9 @@
 .3905c4		90 07		bcc $3905cd	                BCC hdc_error         ; Print an error message if couldn't get anything
 .3905c6		22 d0 40 39	jsl $3940d0	                JSL DOS_TESTBOOT      ; Try to boot from the IDE's MBR
 .3905ca		82 bd ff	brl $39058a	                BRL BOOTBASIC         ; If we couldn't fall, into BASIC
-.3905cd		a2 2c 90	ldx #$902c	hdc_error       LDX #<>ide_err_boot   ; Print a message saying SD card booting is not implemented
+.3905cd		a2 33 90	ldx #$9033	hdc_error       LDX #<>ide_err_boot   ; Print a message saying SD card booting is not implemented
 .3905d0		80 1f		bra $3905f1	                BRA PR_BOOT_ERROR
-.3905d2		a2 75 90	ldx #$9075	BOOTFLOPPY      LDX #<>fdc_boot
+.3905d2		a2 7c 90	ldx #$907c	BOOTFLOPPY      LDX #<>fdc_boot
 .3905d5		22 01 07 39	jsl $390701	                JSL IPRINT
 .3905d9		e2 20		sep #$20	                SEP #$20        ; set A short
 .3905db		a9 00		lda #$00	                LDA #BIOS_DEV_FDC
@@ -2653,9 +2653,9 @@
 .3905e5		90 07		bcc $3905ee	                BCC fdc_error         ; Print an error message if couldn't get anything
 .3905e7		22 d0 40 39	jsl $3940d0	                JSL DOS_TESTBOOT      ; Try to boot from the FDC's MBR
 .3905eb		82 9c ff	brl $39058a	                BRL BOOTBASIC         ; If we couldn't, fall into BASIC
-.3905ee		a2 4f 90	ldx #$904f	fdc_error       LDX #<>fdc_err_boot   ; Print a message saying SD card booting is not implemented
+.3905ee		a2 56 90	ldx #$9056	fdc_error       LDX #<>fdc_err_boot   ; Print a message saying SD card booting is not implemented
 .3905f1		22 01 07 39	jsl $390701	PR_BOOT_ERROR   JSL IPRINT            ; Print the error message in X
-.3905f5		a2 eb 8f	ldx #$8feb	                LDX #<>boot_retry     ; Print the boot retry prompt
+.3905f5		a2 f2 8f	ldx #$8ff2	                LDX #<>boot_retry     ; Print the boot retry prompt
 .3905f8		22 01 07 39	jsl $390701	                JSL IPRINT
 .3905fc		22 9b 06 39	jsl $39069b	boot_wait_key   JSL IGETCHW           ; Wait for a keypress
 .390600		c9 52		cmp #$52	                CMP #'R'              ; Was "R" pressed?
@@ -2716,7 +2716,7 @@
 .39066d		28		plp		                PLP
 .39066e		68		pla		                PLA             ; end setdbr macro
 .39066f		e2 20		sep #$20	                SEP #$20        ; set A short
-.390671		a2 be 90	ldx #$90be	                LDX #<>ready_msg
+.390671		a2 c5 90	ldx #$90c5	                LDX #<>ready_msg
 .390674		22 01 07 39	jsl $390701	                JSL IPRINT
 .390678						IREADYWAIT
 .390678		22 92 06 39	jsl $390692	                JSL IGETCHE
@@ -3106,7 +3106,7 @@
 .3908d5		c2 20		rep #$20	                REP #$20        ; set A long
 .3908d7		29 0f 00	and #$000f	                AND #$0F
 .3908da		aa		tax		                TAX
-.3908db		bf d2 90 39	lda $3990d2,x	                LDA hex_digits,X
+.3908db		bf d9 90 39	lda $3990d9,x	                LDA hex_digits,X
 .3908df		22 21 07 39	jsl $390721	                JSL IPUTC       ; Print the digit
 .3908e3		fa		plx		                PLX
 .3908e4		6b		rtl		                RTL
@@ -3158,7 +3158,7 @@
 .390925		85 04		sta $04		                STA TMPPTR2
 .390927		a9 af 00	lda #$00af	                LDA #`CS_COLOR_MEM_PTR
 .39092a		85 06		sta $06		                STA TMPPTR2+2
-.39092c		a9 2f 8d	lda #$8d2f	                LDA #<>greet_clr_line1
+.39092c		a9 36 8d	lda #$8d36	                LDA #<>greet_clr_line1
 .39092f		85 00		sta $00		                STA TMPPTR1
 .390931		a9 39 00	lda #$0039	                LDA #`greet_clr_line1
 .390934		85 02		sta $02		                STA TMPPTR1+2
@@ -3167,7 +3167,7 @@
 .39093a		a5 04		lda $04		                LDA TMPPTR2
 .39093c		65 11		adc $11		                ADC COLS_PER_LINE
 .39093e		85 04		sta $04		                STA TMPPTR2
-.390940		a9 59 8d	lda #$8d59	                LDA #<>greet_clr_line2
+.390940		a9 60 8d	lda #$8d60	                LDA #<>greet_clr_line2
 .390943		85 00		sta $00		                STA TMPPTR1
 .390945		a9 39 00	lda #$0039	                LDA #`greet_clr_line2
 .390948		85 02		sta $02		                STA TMPPTR1+2
@@ -3176,7 +3176,7 @@
 .39094e		a5 04		lda $04		                LDA TMPPTR2
 .390950		65 11		adc $11		                ADC COLS_PER_LINE
 .390952		85 04		sta $04		                STA TMPPTR2
-.390954		a9 83 8d	lda #$8d83	                LDA #<>greet_clr_line3
+.390954		a9 8a 8d	lda #$8d8a	                LDA #<>greet_clr_line3
 .390957		85 00		sta $00		                STA TMPPTR1
 .390959		a9 39 00	lda #$0039	                LDA #`greet_clr_line3
 .39095c		85 02		sta $02		                STA TMPPTR1+2
@@ -3185,7 +3185,7 @@
 .390962		a5 04		lda $04		                LDA TMPPTR2
 .390964		65 11		adc $11		                ADC COLS_PER_LINE
 .390966		85 04		sta $04		                STA TMPPTR2
-.390968		a9 ad 8d	lda #$8dad	                LDA #<>greet_clr_line4
+.390968		a9 b4 8d	lda #$8db4	                LDA #<>greet_clr_line4
 .39096b		85 00		sta $00		                STA TMPPTR1
 .39096d		a9 39 00	lda #$0039	                LDA #`greet_clr_line4
 .390970		85 02		sta $02		                STA TMPPTR1+2
@@ -3194,7 +3194,7 @@
 .390976		a5 04		lda $04		                LDA TMPPTR2
 .390978		65 11		adc $11		                ADC COLS_PER_LINE
 .39097a		85 04		sta $04		                STA TMPPTR2
-.39097c		a9 d7 8d	lda #$8dd7	                LDA #<>greet_clr_line5
+.39097c		a9 de 8d	lda #$8dde	                LDA #<>greet_clr_line5
 .39097f		85 00		sta $00		                STA TMPPTR1
 .390981		a9 39 00	lda #$0039	                LDA #`greet_clr_line5
 .390984		85 02		sta $02		                STA TMPPTR1+2
@@ -3747,10 +3747,10 @@
 .390ed5		af 2a 01 00	lda $00012a	                LDA @lADDER32_R_HL
 .390ed9		85 46		sta $46		                STA BMP_PRSE_SRC_PTR+2
 .390edb		20 4b 0f	jsr $390f4b	                JSR BMP_PARSER_DMA_SHIT_OUT  ; We are going to start with the slow method
-.390ede		a2 93 8f	ldx #$8f93	                LDX #<>bmp_parser_msg0
+.390ede		a2 9a 8f	ldx #$8f9a	                LDX #<>bmp_parser_msg0
 .390ee1		80 03		bra $390ee6	                BRA BMP_PARSER_END_NO_ERROR
 .390ee3						BMP_PARSER_END_WITH_ERROR
-.390ee3		a2 7f 8f	ldx #$8f7f	                LDX #<>bmp_parser_err0
+.390ee3		a2 86 8f	ldx #$8f86	                LDX #<>bmp_parser_err0
 .390ee6						BMP_PARSER_END_NO_ERROR
 .390ee6		22 01 07 39	jsl $390701	                JSL IPRINT       ; print the first line
 .390eea		6b		rtl		                RTL
@@ -13464,13 +13464,13 @@
 .396b4f		e2 20		sep #$20	                SEP #$20        ; set A short
 .396b51		e2 10		sep #$10	                SEP #$10        ; set X short
 .396b53		a2 00		ldx #$00	                LDX	#$00
-.396b55		bf 01 8e 39	lda $398e01,x	lutinitloop0	LDA @lfg_color_lut,x    ; get Local Data c64_character_Color_LUT_4_Txt
+.396b55		bf 08 8e 39	lda $398e08,x	lutinitloop0	LDA @lfg_color_lut,x    ; get Local Data c64_character_Color_LUT_4_Txt
 .396b59		9f 00 1b ae	sta $ae1b00,x	                STA @lEVID_FG_LUT,x	    ; Write in LUT Memory
 .396b5d		e8		inx		                inx
 .396b5e		e0 40		cpx #$40	                cpx #$40
 .396b60		d0 f3		bne $396b55	                bne lutinitloop0
 .396b62		a2 00		ldx #$00	                LDX	#$00
-.396b64		bf 41 8e 39	lda $398e41,x	lutinitloop1	LDA @lbg_color_lut,x    ; get Local Data
+.396b64		bf 48 8e 39	lda $398e48,x	lutinitloop1	LDA @lbg_color_lut,x    ; get Local Data
 .396b68		9f 40 1b ae	sta $ae1b40,x	                STA @lEVID_BG_LUT,x	    ; Write in LUT Memory
 .396b6c		e8		inx		                INX
 .396b6d		e0 40		cpx #$40	                CPX #$40
@@ -16371,11 +16371,11 @@
 .398443						udp_send
 .398443		20 4f 84	jsr $39844f	            jsr     call
 .398446		6b		rtl		            rtl
->398447		8d 8b				            .word   <>net.udp_send
+>398447		94 8b				            .word   <>net.udp_send
 .398449						udp_recv
 .398449		20 4f 84	jsr $39844f	            jsr     call
 .39844c		6b		rtl		            rtl
->39844d		c5 8b				            .word   <>net.udp_recv
+>39844d		cc 8b				            .word   <>net.udp_recv
 .39844f						call
 =195						        czvn = 1+2+64+128
 .39844f		c2 c3		rep #$c3	        rep     #czvn       ; Clear czvn
@@ -17346,268 +17346,270 @@
 .398b3e		9f 00 00 3c	sta $3c0000,x	        sta @l  kernel.net.pbuf.deque,x
 .398b42		8e 35 8b	stx $8b35	        stx    <>rx_queue+lib.deque_t.head,b
 .398b45		8e 37 8b	stx $8b37	        stx    <>rx_queue+lib.deque_t.tail,b
-.398b48		4c 56 8b	jmp $398b56	        jmp     _done
-.398b4b		8a		txa		_ins    txa
-.398b4c		ae 37 8b	ldx $8b37	        ldx    <>rx_queue+lib.deque_t.tail,b
-.398b4f		9f 00 00 3c	sta $3c0000,x	        sta @l  kernel.net.pbuf.deque,x
-.398b53		8d 37 8b	sta $8b37	        sta     <>rx_queue+lib.deque_t.tail,b
-.398b56		60		rts		        rts
-.398b57						packet_recv
-.398b57		20 00 83	jsr $398300	_loop   jsr     hardware.lan9221.eth_tick   ; NZ if the 100ms timer has reset.
-.398b5a		f0 09		beq $398b65	        beq     _recv
-.398b5c		af d2 8a 39	lda $398ad2	        lda     conf.ticks
-.398b60		1a		inc a		        inc     a
-.398b61		8f d2 8a 39	sta $398ad2	        sta     conf.ticks
-.398b65		20 5d 83	jsr $39835d	_recv   jsr     hardware.lan9221.eth_packet_recv
-.398b68		aa		tax		        tax
-.398b69		f0 21		beq $398b8c	        beq     _done
-.398b6b		bf 12 00 3c	lda $3c0012,x	        lda     pbuf.eth.type,x
-.398b6f		eb		xba		        xba
-.398b70		c9 00 08	cmp #$0800	        cmp     #$0800
-.398b73		f0 11		beq $398b86	        beq     _ipv4
-.398b75		c9 06 08	cmp #$0806	        cmp     #$0806
-.398b78		f0 06		beq $398b80	        beq     _arp
-.398b7a		20 ab 84	jsr $3984ab	        jsr     kernel.net.pbuf_free_x  ; We don't handle anything else.
-.398b7d		4c 57 8b	jmp $398b57	        jmp     _loop
-.398b80		20 b9 84	jsr $3984b9	_arp    jsr     arp.recv
-.398b83		4c 57 8b	jmp $398b57	        jmp     _loop
-.398b86		20 77 88	jsr $398877	_ipv4   jsr     ip_check
-.398b89		4c 57 8b	jmp $398b57	        jmp     _loop
-.398b8c		60		rts		_done   rts
-.398b8d						udp_send
-.398b8d		af be 8a 39	lda $398abe	            lda     conf.init
-.398b91		f0 30		beq $398bc3	            beq     _error
-.398b93		4b		phk		            phk
-.398b94		ab		plb		            plb
-.398b95		20 57 8b	jsr $398b57	            jsr     packet_recv
-.398b98		20 31 8a	jsr $398a31	            jsr     udp_make
-.398b9b		b0 22		bcs $398bbf	            bcs     _out
-.398b9d		bf 24 00 3c	lda $3c0024,x	            lda     pbuf.ipv4.dest+0,x
-.398ba1		cf c2 8a 39	cmp $398ac2	            cmp     conf.ip_addr+0
-.398ba5		d0 0f		bne $398bb6	            bne     _extern
-.398ba7		bf 26 00 3c	lda $3c0026,x	            lda     pbuf.ipv4.dest+2,x
-.398bab		cf c4 8a 39	cmp $398ac4	            cmp     conf.ip_addr+2
-.398baf		d0 05		bne $398bb6	            bne     _extern
-.398bb1		20 77 88	jsr $398877	            jsr     ip_check
-.398bb4		80 08		bra $398bbe	            bra     _done
-.398bb6		20 3c 87	jsr $39873c	_extern     jsr     arp.bind
-.398bb9		b0 05		bcs $398bc0	            bcs     _fail
-.398bbb		20 57 83	jsr $398357	            jsr     hardware.lan9221.eth_packet_send
-.398bbe		18		clc		_done       clc
-.398bbf		60		rts		_out        rts
-.398bc0		20 ab 84	jsr $3984ab	_fail       jsr     kernel.net.pbuf_free_x
-.398bc3		38		sec		_error      sec
-.398bc4		60		rts		            rts
-.398bc5						udp_recv
-.398bc5		af be 8a 39	lda $398abe	            lda     conf.init
-.398bc9		d0 05		bne $398bd0	            bne     _recv
-.398bcb		a9 00 00	lda #$0000	            lda     #0
-.398bce		38		sec		            sec
-.398bcf		60		rts		            rts
-.398bd0						_recv
-.398bd0		4b		phk		            phk
-.398bd1		ab		plb		            plb
-.398bd2		20 57 8b	jsr $398b57	            jsr     packet_recv
-.398bd5		64 0e		stz $0e		            stz     user.udp_info.copied,d
-.398bd7		ae 35 8b	ldx $8b35	        ldx    <>rx_queue+lib.deque_t.head,b
-.398bda		f0 0d		beq $398be9	        beq     _done
-.398bdc		bf 00 00 3c	lda $3c0000,x	        lda @l  kernel.net.pbuf.deque,x
-.398be0		8d 35 8b	sta $8b35	        sta     <>rx_queue+lib.deque_t.head,b
-.398be3		d0 03		bne $398be8	        bne     _okay
-.398be5		8d 37 8b	sta $8b37	        sta     <>rx_queue+lib.deque_t.tail,b
-.398be8		8a		txa		_okay   txa
-.398be9		f0 59		beq $398c44	            beq     _out
-.398beb		20 d4 86	jsr $3986d4	            jsr     arp.cache_ip
-.398bee		bf 20 00 3c	lda $3c0020,x	            lda     pbuf.ipv4.src+0,x
-.398bf2		85 02		sta $02		            sta     user.udp_info.remote_ip,d
-.398bf4		bf 22 00 3c	lda $3c0022,x	            lda     pbuf.ipv4.src+2,x
-.398bf8		85 04		sta $04		            sta     user.udp_info.remote_ip+2,d
-.398bfa		bf 28 00 3c	lda $3c0028,x	            lda     pbuf.ipv4.udp.sport,x
-.398bfe		eb		xba		            xba
-.398bff		85 06		sta $06		            sta     user.udp_info.remote_port,d
-.398c01		bf 2a 00 3c	lda $3c002a,x	            lda     pbuf.ipv4.udp.dport,x
+.398b48		4c 5d 8b	jmp $398b5d	        jmp     _done
+.398b4b		a9 00 00	lda #$0000	_ins    lda     #0
+.398b4e		9f 00 00 3c	sta $3c0000,x	        sta @l  kernel.net.pbuf.deque,x
+.398b52		8a		txa		        txa
+.398b53		ae 37 8b	ldx $8b37	        ldx    <>rx_queue+lib.deque_t.tail,b
+.398b56		9f 00 00 3c	sta $3c0000,x	        sta @l  kernel.net.pbuf.deque,x
+.398b5a		8d 37 8b	sta $8b37	        sta     <>rx_queue+lib.deque_t.tail,b
+.398b5d		60		rts		        rts
+.398b5e						packet_recv
+.398b5e		20 00 83	jsr $398300	_loop   jsr     hardware.lan9221.eth_tick   ; NZ if the 100ms timer has reset.
+.398b61		f0 09		beq $398b6c	        beq     _recv
+.398b63		af d2 8a 39	lda $398ad2	        lda     conf.ticks
+.398b67		1a		inc a		        inc     a
+.398b68		8f d2 8a 39	sta $398ad2	        sta     conf.ticks
+.398b6c		20 5d 83	jsr $39835d	_recv   jsr     hardware.lan9221.eth_packet_recv
+.398b6f		aa		tax		        tax
+.398b70		f0 21		beq $398b93	        beq     _done
+.398b72		bf 12 00 3c	lda $3c0012,x	        lda     pbuf.eth.type,x
+.398b76		eb		xba		        xba
+.398b77		c9 00 08	cmp #$0800	        cmp     #$0800
+.398b7a		f0 11		beq $398b8d	        beq     _ipv4
+.398b7c		c9 06 08	cmp #$0806	        cmp     #$0806
+.398b7f		f0 06		beq $398b87	        beq     _arp
+.398b81		20 ab 84	jsr $3984ab	        jsr     kernel.net.pbuf_free_x  ; We don't handle anything else.
+.398b84		4c 5e 8b	jmp $398b5e	        jmp     _loop
+.398b87		20 b9 84	jsr $3984b9	_arp    jsr     arp.recv
+.398b8a		4c 5e 8b	jmp $398b5e	        jmp     _loop
+.398b8d		20 77 88	jsr $398877	_ipv4   jsr     ip_check
+.398b90		4c 5e 8b	jmp $398b5e	        jmp     _loop
+.398b93		60		rts		_done   rts
+.398b94						udp_send
+.398b94		af be 8a 39	lda $398abe	            lda     conf.init
+.398b98		f0 30		beq $398bca	            beq     _error
+.398b9a		4b		phk		            phk
+.398b9b		ab		plb		            plb
+.398b9c		20 5e 8b	jsr $398b5e	            jsr     packet_recv
+.398b9f		20 31 8a	jsr $398a31	            jsr     udp_make
+.398ba2		b0 22		bcs $398bc6	            bcs     _out
+.398ba4		bf 24 00 3c	lda $3c0024,x	            lda     pbuf.ipv4.dest+0,x
+.398ba8		cf c2 8a 39	cmp $398ac2	            cmp     conf.ip_addr+0
+.398bac		d0 0f		bne $398bbd	            bne     _extern
+.398bae		bf 26 00 3c	lda $3c0026,x	            lda     pbuf.ipv4.dest+2,x
+.398bb2		cf c4 8a 39	cmp $398ac4	            cmp     conf.ip_addr+2
+.398bb6		d0 05		bne $398bbd	            bne     _extern
+.398bb8		20 77 88	jsr $398877	            jsr     ip_check
+.398bbb		80 08		bra $398bc5	            bra     _done
+.398bbd		20 3c 87	jsr $39873c	_extern     jsr     arp.bind
+.398bc0		b0 05		bcs $398bc7	            bcs     _fail
+.398bc2		20 57 83	jsr $398357	            jsr     hardware.lan9221.eth_packet_send
+.398bc5		18		clc		_done       clc
+.398bc6		60		rts		_out        rts
+.398bc7		20 ab 84	jsr $3984ab	_fail       jsr     kernel.net.pbuf_free_x
+.398bca		38		sec		_error      sec
+.398bcb		60		rts		            rts
+.398bcc						udp_recv
+.398bcc		af be 8a 39	lda $398abe	            lda     conf.init
+.398bd0		d0 05		bne $398bd7	            bne     _recv
+.398bd2		a9 00 00	lda #$0000	            lda     #0
+.398bd5		38		sec		            sec
+.398bd6		60		rts		            rts
+.398bd7						_recv
+.398bd7		4b		phk		            phk
+.398bd8		ab		plb		            plb
+.398bd9		20 5e 8b	jsr $398b5e	            jsr     packet_recv
+.398bdc		64 0e		stz $0e		            stz     user.udp_info.copied,d
+.398bde		ae 35 8b	ldx $8b35	        ldx    <>rx_queue+lib.deque_t.head,b
+.398be1		f0 0d		beq $398bf0	        beq     _done
+.398be3		bf 00 00 3c	lda $3c0000,x	        lda @l  kernel.net.pbuf.deque,x
+.398be7		8d 35 8b	sta $8b35	        sta     <>rx_queue+lib.deque_t.head,b
+.398bea		d0 03		bne $398bef	        bne     _okay
+.398bec		8d 37 8b	sta $8b37	        sta     <>rx_queue+lib.deque_t.tail,b
+.398bef		8a		txa		_okay   txa
+.398bf0		f0 59		beq $398c4b	            beq     _out
+.398bf2		20 d4 86	jsr $3986d4	            jsr     arp.cache_ip
+.398bf5		bf 20 00 3c	lda $3c0020,x	            lda     pbuf.ipv4.src+0,x
+.398bf9		85 02		sta $02		            sta     user.udp_info.remote_ip,d
+.398bfb		bf 22 00 3c	lda $3c0022,x	            lda     pbuf.ipv4.src+2,x
+.398bff		85 04		sta $04		            sta     user.udp_info.remote_ip+2,d
+.398c01		bf 28 00 3c	lda $3c0028,x	            lda     pbuf.ipv4.udp.sport,x
 .398c05		eb		xba		            xba
-.398c06		85 00		sta $00		            sta     user.udp_info.local_port,d
-.398c08		bf 2c 00 3c	lda $3c002c,x	            lda     pbuf.ipv4.udp.length,x
+.398c06		85 06		sta $06		            sta     user.udp_info.remote_port,d
+.398c08		bf 2a 00 3c	lda $3c002a,x	            lda     pbuf.ipv4.udp.dport,x
 .398c0c		eb		xba		            xba
-.398c0d		38		sec		            sec
-.398c0e		e9 08 00	sbc #$0008	            sbc     #udp_t.size
-.398c11		c5 0c		cmp $0c		            cmp     user.udp_info.buflen,d
-.398c13		90 04		bcc $398c19	            bcc     _length
-.398c15		f0 02		beq $398c19	            beq     _length
-.398c17		a5 0c		lda $0c		            lda     user.udp_info.buflen,d    ; Limit copy to buflen.
-.398c19		85 0e		sta $0e		_length     sta     user.udp_info.copied,d    ; copied = # of bytes to copy
-.398c1b		da		phx		            phx
-.398c1c		a0 00 00	ldy #$0000	            ldy     #0
-.398c1f		4a		lsr a		            lsr     a
-.398c20		90 0f		bcc $398c31	            bcc     _even
-.398c22		e2 20		sep #$20	_odd        sep     #$20
-.398c24		bf 30 00 3c	lda $3c0030,x	            lda     pbuf.ipv4.udp.data,x
-.398c28		97 08		sta [$08],y	            sta     [user.udp_info.buffer],y
-.398c2a		e8		inx		            inx
-.398c2b		c8		iny		            iny
-.398c2c		c2 20		rep #$20	            rep     #$20
-.398c2e		4c 3b 8c	jmp $398c3b	            jmp     _next
-.398c31		bf 30 00 3c	lda $3c0030,x	_even       lda     pbuf.ipv4.udp.data,x
-.398c35		97 08		sta [$08],y	            sta     [user.udp_info.buffer],y
-.398c37		e8		inx		            inx
-.398c38		e8		inx		            inx
-.398c39		c8		iny		            iny
-.398c3a		c8		iny		            iny
-.398c3b		c4 0e		cpy $0e		_next       cpy     user.udp_info.copied,d
-.398c3d		d0 f2		bne $398c31	            bne     _even
-.398c3f		fa		plx		            plx
-.398c40		20 ab 84	jsr $3984ab	            jsr     kernel.net.pbuf_free_x
-.398c43		8a		txa		            txa     ; Set the NZ condition code.
-.398c44		18		clc		_out        clc
-.398c45		60		rts		            rts
+.398c0d		85 00		sta $00		            sta     user.udp_info.local_port,d
+.398c0f		bf 2c 00 3c	lda $3c002c,x	            lda     pbuf.ipv4.udp.length,x
+.398c13		eb		xba		            xba
+.398c14		38		sec		            sec
+.398c15		e9 08 00	sbc #$0008	            sbc     #udp_t.size
+.398c18		c5 0c		cmp $0c		            cmp     user.udp_info.buflen,d
+.398c1a		90 04		bcc $398c20	            bcc     _length
+.398c1c		f0 02		beq $398c20	            beq     _length
+.398c1e		a5 0c		lda $0c		            lda     user.udp_info.buflen,d    ; Limit copy to buflen.
+.398c20		85 0e		sta $0e		_length     sta     user.udp_info.copied,d    ; copied = # of bytes to copy
+.398c22		da		phx		            phx
+.398c23		a0 00 00	ldy #$0000	            ldy     #0
+.398c26		4a		lsr a		            lsr     a
+.398c27		90 0f		bcc $398c38	            bcc     _even
+.398c29		e2 20		sep #$20	_odd        sep     #$20
+.398c2b		bf 30 00 3c	lda $3c0030,x	            lda     pbuf.ipv4.udp.data,x
+.398c2f		97 08		sta [$08],y	            sta     [user.udp_info.buffer],y
+.398c31		e8		inx		            inx
+.398c32		c8		iny		            iny
+.398c33		c2 20		rep #$20	            rep     #$20
+.398c35		4c 42 8c	jmp $398c42	            jmp     _next
+.398c38		bf 30 00 3c	lda $3c0030,x	_even       lda     pbuf.ipv4.udp.data,x
+.398c3c		97 08		sta [$08],y	            sta     [user.udp_info.buffer],y
+.398c3e		e8		inx		            inx
+.398c3f		e8		inx		            inx
+.398c40		c8		iny		            iny
+.398c41		c8		iny		            iny
+.398c42		c4 0e		cpy $0e		_next       cpy     user.udp_info.copied,d
+.398c44		d0 f2		bne $398c38	            bne     _even
+.398c46		fa		plx		            plx
+.398c47		20 ab 84	jsr $3984ab	            jsr     kernel.net.pbuf_free_x
+.398c4a		8a		txa		            txa     ; Set the NZ condition code.
+.398c4b		18		clc		_out        clc
+.398c4c		60		rts		            rts
 
 ;******  Return to file: src/kernel.asm
 
-.398c46						    KERNEL_DATA
->398c46		20 20 20 20 0b 0c 0b 0c		    greet_msg   .text $20, $20, $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, " UU    UU   +" ,$0D
->398c4e		0b 0c 0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20
->398c5e		20 20 2b 0d
->398c62		20 20 20 0b 0c 0b 0c 0b		                .text $20, $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU   +",$0D
->398c6a		0c 0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20 20
->398c7a		20 2b 0d
->398c7d		20 20 0b 0c 0b 0c 0b 0c		                .text $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU +++++",$0D
->398c85		0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20 2b 2b
->398c95		2b 2b 2b 0d
->398c99		20 0b 0c 0b 0c 0b 0c 0b		                .text $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU   +",$0D
->398ca1		0c 0b 0c 20 55 55 20 20 20 20 55 55 20 20 20 2b
->398cb1		0d
->398cb2		0b 0c 0b 0c 0b 0c 0b 0c		                .text $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UUUUUUUU   +",$0D
->398cba		0b 0c 20 55 55 55 55 55 55 55 55 20 20 20 2b 0d
->398cca		0d 43 32 35 36 20 46 4f		                .text $0D, "C256 FOENIX U+ -- 3,670,016 Bytes Free", $0D
->398cd2		45 4e 49 58 20 55 2b 20 2d 2d 20 33 2c 36 37 30
->398ce2		2c 30 31 36 20 42 79 74 65 73 20 46 72 65 65 0d
->398cf2		77 77 77 2e 63 32 35 36		                .text "www.c256foenix.com -- Kernel: "
->398cfa		66 6f 65 6e 69 78 2e 63 6f 6d 20 2d 2d 20 4b 65
->398d0a		72 6e 65 6c 3a 20
+.398c4d						    KERNEL_DATA
+>398c4d		20 20 20 20 0b 0c 0b 0c		    greet_msg   .text $20, $20, $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, " UU    UU   +" ,$0D
+>398c55		0b 0c 0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20
+>398c65		20 20 2b 0d
+>398c69		20 20 20 0b 0c 0b 0c 0b		                .text $20, $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU   +",$0D
+>398c71		0c 0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20 20
+>398c81		20 2b 0d
+>398c84		20 20 0b 0c 0b 0c 0b 0c		                .text $20, $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU +++++",$0D
+>398c8c		0b 0c 0b 0c 20 55 55 20 20 20 20 55 55 20 2b 2b
+>398c9c		2b 2b 2b 0d
+>398ca0		20 0b 0c 0b 0c 0b 0c 0b		                .text $20, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UU    UU   +",$0D
+>398ca8		0c 0b 0c 20 55 55 20 20 20 20 55 55 20 20 20 2b
+>398cb8		0d
+>398cb9		0b 0c 0b 0c 0b 0c 0b 0c		                .text $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $0B, $0C, $20, "UUUUUUUU   +",$0D
+>398cc1		0b 0c 20 55 55 55 55 55 55 55 55 20 20 20 2b 0d
+>398cd1		0d 43 32 35 36 20 46 4f		                .text $0D, "C256 FOENIX U+ -- 3,670,016 Bytes Free", $0D
+>398cd9		45 4e 49 58 20 55 2b 20 2d 2d 20 33 2c 36 37 30
+>398ce9		2c 30 31 36 20 42 79 74 65 73 20 46 72 65 65 0d
+>398cf9		77 77 77 2e 63 32 35 36		                .text "www.c256foenix.com -- Kernel: "
+>398d01		66 6f 65 6e 69 78 2e 63 6f 6d 20 2d 2d 20 4b 65
+>398d11		72 6e 65 6c 3a 20
 
 ;******  Processing file: src/version.asm
 
->398d10		76 30 2e 34 2e 30 2d 61		.text "v0.4.0-alpha+333 (2021-12-06)"
->398d18		6c 70 68 61 2b 33 33 33 20 28 32 30 32 31 2d 31
->398d28		32 2d 30 36 29
+>398d17		76 30 2e 34 2e 30 2d 61		.text "v0.4.0-alpha+333 (2021-12-06)"
+>398d1f		6c 70 68 61 2b 33 33 33 20 28 32 30 32 31 2d 31
+>398d2f		32 2d 30 36 29
 
 ;******  Return to file: src/kernel.asm
 
->398d2d		0d 00				                .text $0D,$00
->398d2f		90 90 90 90 90 90 d0 d0		  greet_clr_line1 .text $90, $90, $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
->398d37		b0 b0 a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398d47		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398d57		f0 f0
->398d59		90 90 90 90 90 d0 d0 b0		  greet_clr_line2 .text $90, $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
->398d61		b0 a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398d71		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398d81		f0 f0
->398d83		90 90 90 90 d0 d0 b0 b0		  greet_clr_line3 .text $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
->398d8b		a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398d9b		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398dab		f0 f0
->398dad		90 90 90 d0 d0 b0 b0 a0		  greet_clr_line4 .text $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
->398db5		a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398dc5		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398dd5		f0 f0
->398dd7		90 90 d0 d0 b0 b0 a0 a0		  greet_clr_line5 .text $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
->398ddf		e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398def		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
->398dff		f0 f0
->398e01		00 00 00 ff			fg_color_lut	  .text $00, $00, $00, $FF
->398e05		00 00 80 ff			                .text $00, $00, $80, $FF
->398e09		00 80 00 ff			                .text $00, $80, $00, $FF
->398e0d		80 00 00 ff			                .text $80, $00, $00, $FF
->398e11		00 80 80 ff			                .text $00, $80, $80, $FF
->398e15		80 80 00 ff			                .text $80, $80, $00, $FF
->398e19		80 00 80 ff			                .text $80, $00, $80, $FF
->398e1d		80 80 80 ff			                .text $80, $80, $80, $FF
->398e21		00 45 ff ff			                .text $00, $45, $FF, $FF
->398e25		13 45 8b ff			                .text $13, $45, $8B, $FF
->398e29		00 00 20 ff			                .text $00, $00, $20, $FF
->398e2d		00 20 00 ff			                .text $00, $20, $00, $FF
->398e31		20 00 00 ff			                .text $20, $00, $00, $FF
->398e35		20 20 20 ff			                .text $20, $20, $20, $FF
->398e39		40 40 40 ff			                .text $40, $40, $40, $FF
->398e3d		ff ff ff ff			                .text $FF, $FF, $FF, $FF
->398e41		00 00 00 ff			bg_color_lut	  .text $00, $00, $00, $FF
->398e45		00 00 80 ff			                .text $00, $00, $80, $FF
->398e49		00 80 00 ff			                .text $00, $80, $00, $FF
->398e4d		80 00 00 ff			                .text $80, $00, $00, $FF
->398e51		00 20 20 ff			                .text $00, $20, $20, $FF
->398e55		20 20 00 ff			                .text $20, $20, $00, $FF
->398e59		20 00 20 ff			                .text $20, $00, $20, $FF
->398e5d		20 20 20 ff			                .text $20, $20, $20, $FF
->398e61		1e 69 d2 ff			                .text $1E, $69, $D2, $FF
->398e65		13 45 8b ff			                .text $13, $45, $8B, $FF
->398e69		00 00 20 ff			                .text $00, $00, $20, $FF
->398e6d		00 20 00 ff			                .text $00, $20, $00, $FF
->398e71		40 00 00 ff			                .text $40, $00, $00, $FF
->398e75		10 10 10 ff			                .text $10, $10, $10, $FF
->398e79		40 40 40 ff			                .text $40, $40, $40, $FF
->398e7d		ff ff ff ff			                .text $FF, $FF, $FF, $FF
->398e81		43 6d 64 20 30 78 41 41		pass_tst0xAAmsg .text "Cmd 0xAA Test passed...", $0D, $00
->398e89		20 54 65 73 74 20 70 61 73 73 65 64 2e 2e 2e 0d
->398e99		00
->398e9a		43 6d 64 20 30 78 41 42		pass_tst0xABmsg .text "Cmd 0xAB Test passed...", $0D, $00
->398ea2		20 54 65 73 74 20 70 61 73 73 65 64 2e 2e 2e 0d
->398eb2		00
->398eb3		43 6d 64 20 30 78 36 30		pass_cmd0x60msg .text "Cmd 0x60 Executed.", $0D, $00
->398ebb		20 45 78 65 63 75 74 65 64 2e 0d 00
->398ec7		43 6d 64 20 30 78 46 46		pass_cmd0xFFmsg .text "Cmd 0xFF (Reset) Done.", $0D, $00
->398ecf		20 28 52 65 73 65 74 29 20 44 6f 6e 65 2e 0d 00
->398edf		43 6d 64 20 30 78 45 45		pass_cmd0xEEmsg .text "Cmd 0xEE Echo Test passed...", $0D, $00
->398ee7		20 45 63 68 6f 20 54 65 73 74 20 70 61 73 73 65
->398ef7		64 2e 2e 2e 0d 00
->398efd		4b 65 79 62 6f 61 72 64		Success_kb_init .text "Keyboard Present", $0D, $00
->398f05		20 50 72 65 73 65 6e 74 0d 00
->398f0f		4d 6f 75 73 65 20 50 72		Success_ms_init .text "Mouse Present", $0D, $00
->398f17		65 73 65 6e 74 0d 00
->398f1e		4e 6f 20 4b 65 79 62 6f		Failed_kb_init  .text "No Keyboard Attached or Failed Init...", $0D, $00
->398f26		61 72 64 20 41 74 74 61 63 68 65 64 20 6f 72 20
->398f36		46 61 69 6c 65 64 20 49 6e 69 74 2e 2e 2e 0d 00
->398f46		4e 6f 20 4d 6f 75 73 65		Failed_ms_init  .text "No Mouse Attached or Failed Init...", $0D, $00
->398f4e		20 41 74 74 61 63 68 65 64 20 6f 72 20 46 61 69
->398f5e		6c 65 64 20 49 6e 69 74 2e 2e 2e 0d 00
->398f6b		49 20 61 6d 20 73 74 75		IamStuckHeremsg .text "I am stuck here...", $0D, $00
->398f73		63 6b 20 68 65 72 65 2e 2e 2e 0d 00
->398f7f		4e 4f 20 53 49 47 4e 41		bmp_parser_err0 .text "NO SIGNATURE FOUND.", $00
->398f87		54 55 52 45 20 46 4f 55 4e 44 2e 00
->398f93		42 4d 50 20 4c 4f 41 44		bmp_parser_msg0 .text "BMP LOADED.", $00
->398f9b		45 44 2e 00
->398f9f		45 58 45 43 55 54 49 4e		bmp_parser_msg1 .text "EXECUTING BMP PARSER", $00
->398fa7		47 20 42 4d 50 20 50 41 52 53 45 52 00
->398fb4		49 44 45 20 48 44 44 20		IDE_HDD_Present_msg0 .text "IDE HDD Present:", $00
->398fbc		50 72 65 73 65 6e 74 3a 00
->398fc5		42 6f 6f 74 20 44 49 50		boot_invalid    .null "Boot DIP switch settings are invalid."
->398fcd		20 73 77 69 74 63 68 20 73 65 74 74 69 6e 67 73
->398fdd		20 61 72 65 20 69 6e 76 61 6c 69 64 2e 00
->398feb		50 72 65 73 73 20 52 20		boot_retry      .null "Press R to retry, B to go to BASIC.", 13
->398ff3		74 6f 20 72 65 74 72 79 2c 20 42 20 74 6f 20 67
->399003		6f 20 74 6f 20 42 41 53 49 43 2e 0d 00
->399010		55 6e 61 62 6c 65 20 74		sdc_err_boot    .null "Unable to read the SD card."
->399018		6f 20 72 65 61 64 20 74 68 65 20 53 44 20 63 61
->399028		72 64 2e 00
->39902c		55 6e 61 62 6c 65 20 74		ide_err_boot    .null "Unable to read from the IDE drive."
->399034		6f 20 72 65 61 64 20 66 72 6f 6d 20 74 68 65 20
->399044		49 44 45 20 64 72 69 76 65 2e 00
->39904f		55 6e 61 62 6c 65 20 74		fdc_err_boot    .null "Unable to read from the floppy drive."
->399057		6f 20 72 65 61 64 20 66 72 6f 6d 20 74 68 65 20
->399067		66 6c 6f 70 70 79 20 64 72 69 76 65 2e 00
->399075		42 6f 6f 74 69 6e 67 20		fdc_boot        .null "Booting from floppy..."
->39907d		66 72 6f 6d 20 66 6c 6f 70 70 79 2e 2e 2e 00
->39908c		42 6f 6f 74 69 6e 67 20		sdc_boot        .null "Booting from SDCard..."
->399094		66 72 6f 6d 20 53 44 43 61 72 64 2e 2e 2e 00
->3990a3		42 6f 6f 74 69 6e 67 20		ide_boot        .null "Booting from Hard Drive..."
->3990ab		66 72 6f 6d 20 48 61 72 64 20 44 72 69 76 65 2e
->3990bb		2e 2e 00
->3990be		0d 52 45 41 44 59 2e 00		ready_msg       .null $0D,"READY."
->3990c6		41 42 4f 52 54 20 45 52		error_01        .null "ABORT ERROR"
->3990ce		52 4f 52 00
->3990d2		30 31 32 33 34 35 36 37		hex_digits      .text "0123456789ABCDEF",0
->3990da		38 39 41 42 43 44 45 46 00
->3990e3						.align 256
+>398d34		0d 00				                .text $0D,$00
+>398d36		90 90 90 90 90 90 d0 d0		  greet_clr_line1 .text $90, $90, $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
+>398d3e		b0 b0 a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398d4e		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398d5e		f0 f0
+>398d60		90 90 90 90 90 d0 d0 b0		  greet_clr_line2 .text $90, $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
+>398d68		b0 a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398d78		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398d88		f0 f0
+>398d8a		90 90 90 90 d0 d0 b0 b0		  greet_clr_line3 .text $90, $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
+>398d92		a0 a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398da2		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398db2		f0 f0
+>398db4		90 90 90 d0 d0 b0 b0 a0		  greet_clr_line4 .text $90, $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
+>398dbc		a0 e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398dcc		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398ddc		f0 f0
+>398dde		90 90 d0 d0 b0 b0 a0 a0		  greet_clr_line5 .text $90, $90, $D0, $D0, $B0, $B0, $A0, $A0, $E0, $E0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0, $F0
+>398de6		e0 e0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398df6		f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0
+>398e06		f0 f0
+>398e08		00 00 00 ff			fg_color_lut	  .text $00, $00, $00, $FF
+>398e0c		00 00 80 ff			                .text $00, $00, $80, $FF
+>398e10		00 80 00 ff			                .text $00, $80, $00, $FF
+>398e14		80 00 00 ff			                .text $80, $00, $00, $FF
+>398e18		00 80 80 ff			                .text $00, $80, $80, $FF
+>398e1c		80 80 00 ff			                .text $80, $80, $00, $FF
+>398e20		80 00 80 ff			                .text $80, $00, $80, $FF
+>398e24		80 80 80 ff			                .text $80, $80, $80, $FF
+>398e28		00 45 ff ff			                .text $00, $45, $FF, $FF
+>398e2c		13 45 8b ff			                .text $13, $45, $8B, $FF
+>398e30		00 00 20 ff			                .text $00, $00, $20, $FF
+>398e34		00 20 00 ff			                .text $00, $20, $00, $FF
+>398e38		20 00 00 ff			                .text $20, $00, $00, $FF
+>398e3c		20 20 20 ff			                .text $20, $20, $20, $FF
+>398e40		40 40 40 ff			                .text $40, $40, $40, $FF
+>398e44		ff ff ff ff			                .text $FF, $FF, $FF, $FF
+>398e48		00 00 00 ff			bg_color_lut	  .text $00, $00, $00, $FF
+>398e4c		00 00 80 ff			                .text $00, $00, $80, $FF
+>398e50		00 80 00 ff			                .text $00, $80, $00, $FF
+>398e54		80 00 00 ff			                .text $80, $00, $00, $FF
+>398e58		00 20 20 ff			                .text $00, $20, $20, $FF
+>398e5c		20 20 00 ff			                .text $20, $20, $00, $FF
+>398e60		20 00 20 ff			                .text $20, $00, $20, $FF
+>398e64		20 20 20 ff			                .text $20, $20, $20, $FF
+>398e68		1e 69 d2 ff			                .text $1E, $69, $D2, $FF
+>398e6c		13 45 8b ff			                .text $13, $45, $8B, $FF
+>398e70		00 00 20 ff			                .text $00, $00, $20, $FF
+>398e74		00 20 00 ff			                .text $00, $20, $00, $FF
+>398e78		40 00 00 ff			                .text $40, $00, $00, $FF
+>398e7c		10 10 10 ff			                .text $10, $10, $10, $FF
+>398e80		40 40 40 ff			                .text $40, $40, $40, $FF
+>398e84		ff ff ff ff			                .text $FF, $FF, $FF, $FF
+>398e88		43 6d 64 20 30 78 41 41		pass_tst0xAAmsg .text "Cmd 0xAA Test passed...", $0D, $00
+>398e90		20 54 65 73 74 20 70 61 73 73 65 64 2e 2e 2e 0d
+>398ea0		00
+>398ea1		43 6d 64 20 30 78 41 42		pass_tst0xABmsg .text "Cmd 0xAB Test passed...", $0D, $00
+>398ea9		20 54 65 73 74 20 70 61 73 73 65 64 2e 2e 2e 0d
+>398eb9		00
+>398eba		43 6d 64 20 30 78 36 30		pass_cmd0x60msg .text "Cmd 0x60 Executed.", $0D, $00
+>398ec2		20 45 78 65 63 75 74 65 64 2e 0d 00
+>398ece		43 6d 64 20 30 78 46 46		pass_cmd0xFFmsg .text "Cmd 0xFF (Reset) Done.", $0D, $00
+>398ed6		20 28 52 65 73 65 74 29 20 44 6f 6e 65 2e 0d 00
+>398ee6		43 6d 64 20 30 78 45 45		pass_cmd0xEEmsg .text "Cmd 0xEE Echo Test passed...", $0D, $00
+>398eee		20 45 63 68 6f 20 54 65 73 74 20 70 61 73 73 65
+>398efe		64 2e 2e 2e 0d 00
+>398f04		4b 65 79 62 6f 61 72 64		Success_kb_init .text "Keyboard Present", $0D, $00
+>398f0c		20 50 72 65 73 65 6e 74 0d 00
+>398f16		4d 6f 75 73 65 20 50 72		Success_ms_init .text "Mouse Present", $0D, $00
+>398f1e		65 73 65 6e 74 0d 00
+>398f25		4e 6f 20 4b 65 79 62 6f		Failed_kb_init  .text "No Keyboard Attached or Failed Init...", $0D, $00
+>398f2d		61 72 64 20 41 74 74 61 63 68 65 64 20 6f 72 20
+>398f3d		46 61 69 6c 65 64 20 49 6e 69 74 2e 2e 2e 0d 00
+>398f4d		4e 6f 20 4d 6f 75 73 65		Failed_ms_init  .text "No Mouse Attached or Failed Init...", $0D, $00
+>398f55		20 41 74 74 61 63 68 65 64 20 6f 72 20 46 61 69
+>398f65		6c 65 64 20 49 6e 69 74 2e 2e 2e 0d 00
+>398f72		49 20 61 6d 20 73 74 75		IamStuckHeremsg .text "I am stuck here...", $0D, $00
+>398f7a		63 6b 20 68 65 72 65 2e 2e 2e 0d 00
+>398f86		4e 4f 20 53 49 47 4e 41		bmp_parser_err0 .text "NO SIGNATURE FOUND.", $00
+>398f8e		54 55 52 45 20 46 4f 55 4e 44 2e 00
+>398f9a		42 4d 50 20 4c 4f 41 44		bmp_parser_msg0 .text "BMP LOADED.", $00
+>398fa2		45 44 2e 00
+>398fa6		45 58 45 43 55 54 49 4e		bmp_parser_msg1 .text "EXECUTING BMP PARSER", $00
+>398fae		47 20 42 4d 50 20 50 41 52 53 45 52 00
+>398fbb		49 44 45 20 48 44 44 20		IDE_HDD_Present_msg0 .text "IDE HDD Present:", $00
+>398fc3		50 72 65 73 65 6e 74 3a 00
+>398fcc		42 6f 6f 74 20 44 49 50		boot_invalid    .null "Boot DIP switch settings are invalid."
+>398fd4		20 73 77 69 74 63 68 20 73 65 74 74 69 6e 67 73
+>398fe4		20 61 72 65 20 69 6e 76 61 6c 69 64 2e 00
+>398ff2		50 72 65 73 73 20 52 20		boot_retry      .null "Press R to retry, B to go to BASIC.", 13
+>398ffa		74 6f 20 72 65 74 72 79 2c 20 42 20 74 6f 20 67
+>39900a		6f 20 74 6f 20 42 41 53 49 43 2e 0d 00
+>399017		55 6e 61 62 6c 65 20 74		sdc_err_boot    .null "Unable to read the SD card."
+>39901f		6f 20 72 65 61 64 20 74 68 65 20 53 44 20 63 61
+>39902f		72 64 2e 00
+>399033		55 6e 61 62 6c 65 20 74		ide_err_boot    .null "Unable to read from the IDE drive."
+>39903b		6f 20 72 65 61 64 20 66 72 6f 6d 20 74 68 65 20
+>39904b		49 44 45 20 64 72 69 76 65 2e 00
+>399056		55 6e 61 62 6c 65 20 74		fdc_err_boot    .null "Unable to read from the floppy drive."
+>39905e		6f 20 72 65 61 64 20 66 72 6f 6d 20 74 68 65 20
+>39906e		66 6c 6f 70 70 79 20 64 72 69 76 65 2e 00
+>39907c		42 6f 6f 74 69 6e 67 20		fdc_boot        .null "Booting from floppy..."
+>399084		66 72 6f 6d 20 66 6c 6f 70 70 79 2e 2e 2e 00
+>399093		42 6f 6f 74 69 6e 67 20		sdc_boot        .null "Booting from SDCard..."
+>39909b		66 72 6f 6d 20 53 44 43 61 72 64 2e 2e 2e 00
+>3990aa		42 6f 6f 74 69 6e 67 20		ide_boot        .null "Booting from Hard Drive..."
+>3990b2		66 72 6f 6d 20 48 61 72 64 20 44 72 69 76 65 2e
+>3990c2		2e 2e 00
+>3990c5		0d 52 45 41 44 59 2e 00		ready_msg       .null $0D,"READY."
+>3990cd		41 42 4f 52 54 20 45 52		error_01        .null "ABORT ERROR"
+>3990d5		52 4f 52 00
+>3990d9		30 31 32 33 34 35 36 37		hex_digits      .text "0123456789ABCDEF",0
+>3990e1		38 39 41 42 43 44 45 46 00
+>3990ea						.align 256
 >399100		00 1b 31 32 33 34 35 36		ScanCode_Press_Set1   .text $00, $1B, $31, $32, $33, $34, $35, $36, $37, $38, $39, $30, $2D, $3D, $08, $09    ; $00
 >399108		37 38 39 30 2d 3d 08 09
 >399110		71 77 65 72 74 79 75 69		                      .text $71, $77, $65, $72, $74, $79, $75, $69, $6F, $70, $5B, $5D, $0D, $00, $61, $73    ; $10

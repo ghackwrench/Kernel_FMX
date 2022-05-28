@@ -41,7 +41,9 @@ deque_enque   .macro  base, r, link, m
         st\r    <>\base+lib.deque_t.head,b
         st\r    <>\base+lib.deque_t.tail,b
         jmp     _done
-_ins    t\2a
+_ins    lda     #0
+        sta \m  \link,\r
+        t\2a
         ld\r    <>\base+lib.deque_t.tail,b
         sta \m  \link,\r
         sta     <>\base+lib.deque_t.tail,b
